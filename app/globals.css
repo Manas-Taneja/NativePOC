@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-bg-base: #0a0a0a;
+  --color-bg-elevated: #141414;
+  --color-bg-subtle: #1a1a1a;
+  --color-fg-primary: #fafafa;
+  --color-fg-secondary: #a1a1a1;
+  --color-fg-tertiary: #525252;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  /* Spacing */
+  --spacing-5: 1.25rem;
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  
+  /* Border Radius */
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  
+  /* Font Families */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --font-family-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+}
+
+/* iOS-Inspired Refined Minimalism Design Tokens */
+
+/* Light Mode (Default) */
+:root {
+  --color-bg-base: #ffffff;
+  --color-bg-elevated: #f8f9fa;
+  --color-bg-subtle: #f1f3f5;
+  
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-border-muted: rgba(0, 0, 0, 0.1);
+  --color-border-default: rgba(0, 0, 0, 0.15);
+  
+  --color-fg-primary: #0a0a0a;
+  --color-fg-secondary: #525252;
+  --color-fg-tertiary: #a1a1a1;
+  --color-fg-disabled: #d1d5db;
+  
+  /* Single Strategic Accent (iOS Blue) */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+  --color-accent-muted: rgba(59, 130, 246, 0.1);
+  --color-accent-border: rgba(59, 130, 246, 0.3);
+  
+  /* Semantic Colors (minimal use) */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  /* Elevation & Depth (iOS-style soft shadows) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Glass Effects (subtle, for header and modals only) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  
+  /* Typography (iOS-inspired system fonts) */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+  
+  /* Spacing Scale (iOS-style 8pt grid) */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px - iOS common spacing */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-11: 2.75rem;  /* 44px - iOS touch target */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px - iOS nav bar height */
+  
+  /* Borders & Radii (iOS-style generous curves) */
+  --radius-sm: 0.5rem;     /* 8px */
+  --radius-md: 0.75rem;    /* 12px */
+  --radius-lg: 1rem;       /* 16px - iOS standard */
+  --radius-xl: 1.25rem;    /* 20px - iOS bubbles */
+  --radius-2xl: 1.5rem;    /* 24px - iOS large cards */
+  --radius-3xl: 2rem;      /* 32px - iOS modals/sheets */
+  
+  /* iOS-style spring animation config */
+  --spring-stiffness: 300;
+  --spring-damping: 30;
+  
+  /* iOS touch target minimum */
+  --touch-target: 44px;
+}
+
+/* Dark Mode */
+.dark {
+  --color-bg-base: #0a0a0a;
+  --color-bg-elevated: #141414;
+  --color-bg-subtle: #1a1a1a;
+  
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-muted: rgba(255, 255, 255, 0.1);
+  --color-border-default: rgba(255, 255, 255, 0.15);
+  
+  --color-fg-primary: #fafafa;
+  --color-fg-secondary: #a1a1a1;
+  --color-fg-tertiary: #525252;
+  --color-fg-disabled: #3a3a3a;
+  
+  /* Dark mode shadows (more prominent) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  
+  /* Dark mode glass effect */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body {
+  background: var(--color-bg-base);
+  color: var(--color-fg-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* iOS-style smooth scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduced Motion Support (respects iOS accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* iOS-style focus rings */
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
+}
+
+/* iOS-style selection color */
+::selection {
+  background-color: var(--color-accent-muted);
+  color: var(--color-fg-primary);
+}
+
+/* Minimal scrollbar styling (iOS-inspired) */
+.minimal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-muted) transparent;
+}
+
+.minimal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border-muted);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-default);
+}
+
+/* Hide scrollbar when not scrolling (fade effect) */
+.minimal-scrollbar::-webkit-scrollbar-thumb {
+  opacity: 0.3;
+}
+
+.minimal-scrollbar:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
