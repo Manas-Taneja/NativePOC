@@ -72,7 +72,7 @@ npm start
 ### Color Palette
 - **Accent:** iOS Blue (#3b82f6)
 - **Backgrounds:** Layered grays with subtle elevation
-- **Typography:** SF Pro Display inspired system fonts
+- **Typography:** Barlow font family
 
 ### Components
 - **Cards:** Multiple variants (default, interactive, accent)

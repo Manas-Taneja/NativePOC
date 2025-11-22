@@ -9,15 +9,48 @@ import { Button } from "@/components/ui/button"
 import { ChatStream } from "@/components/chat-stream"
 import { motion, AnimatePresence } from "framer-motion"
 import { staggerContainer, staggerItem } from "@/lib/animations"
-import { mockMessages, mockMetrics, mockInsights } from "@/lib/mock-data"
+import { mockMessages, mockMetrics, mockInsights, generateNativeResponse } from "@/lib/mock-data"
 
 export default function Home() {
+  const [messages, setMessages] = React.useState(mockMessages)
+  const [isNativeResponding, setIsNativeResponding] = React.useState(false)
   const [isRightColumnVisible, setIsRightColumnVisible] = React.useState(true)
+
+  const handleSendMessage = React.useCallback((content: string) => {
+    const newMessage = {
+      id: crypto.randomUUID(),
+      content,
+      role: "user" as const,
+      userName: "You",
+      userAvatar: "YOU",
+      timestamp: new Date(),
+    }
+
+    setMessages(prev => [...prev, newMessage])
+
+    if (/^Native\b/i.test(content.trim())) {
+      setIsNativeResponding(true)
+      setTimeout(() => {
+        const response = generateNativeResponse(content)
+        setMessages(prev => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            content: response,
+            role: "assistant" as const,
+            timestamp: new Date(),
+          },
+        ])
+        setIsNativeResponding(false)
+      }, 1000)
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <DashboardHeader />
       
-      <main className="max-w-[1800px] mx-auto px-5 md:px-8 py-8">
+      <main className="max-w-[1800px] mx-auto px-5 md:px-8 py-4">
         <motion.div
           initial="initial"
           animate="animate"
@@ -32,7 +65,7 @@ export default function Home() {
             }`}
           >
             {/* Left Column: Native Chat Stream */}
-            <Card className="h-[calc(100vh-6.3rem)] flex flex-col overflow-hidden">
+            <Card className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
               <div className="border-b border-[var(--color-border-subtle)] p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -99,7 +132,11 @@ export default function Home() {
                   </motion.button>
                 </div>
               </div>
-              <ChatStream messages={mockMessages} />
+              <ChatStream
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                isNativeResponding={isNativeResponding}
+              />
             </Card>
 
             {/* Right Column: Overview */}
@@ -238,70 +275,6 @@ export default function Home() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-
-          {/* Component Showcase at Bottom */}
-          <motion.div variants={staggerItem}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Component Showcase</CardTitle>
-                <CardDescription>
-                  Design system components
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--color-fg-primary)] mb-3">
-                      Button Variants
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                      <Button variant="primary" size="small">Primary</Button>
-                      <Button variant="secondary" size="small">Secondary</Button>
-                      <Button variant="outline" size="small">Outline</Button>
-                      <Button variant="ghost" size="small">Ghost</Button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium text-[var(--color-fg-primary)] mb-3">
-                      Button Sizes
-                    </p>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Button variant="primary" size="small">Small</Button>
-                      <Button variant="primary" size="medium">Medium</Button>
-                      <Button variant="primary" size="large">Large</Button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-[var(--color-fg-primary)] mb-3">
-                      Card Variants
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Card variant="default">
-                        <div className="p-4">
-                          <p className="text-sm font-medium text-[var(--color-fg-primary)]">Default Card</p>
-                          <p className="text-xs text-[var(--color-fg-tertiary)] mt-1">Standard elevation</p>
-                        </div>
-                      </Card>
-                      <Card variant="interactive">
-                        <div className="p-4">
-                          <p className="text-sm font-medium text-[var(--color-fg-primary)]">Interactive Card</p>
-                          <p className="text-xs text-[var(--color-fg-tertiary)] mt-1">Hover to see effect</p>
-                        </div>
-                      </Card>
-                      <Card variant="accent">
-                        <div className="p-4">
-                          <p className="text-sm font-medium text-[var(--color-fg-primary)]">Accent Card</p>
-                          <p className="text-xs text-[var(--color-fg-tertiary)] mt-1">Left accent border</p>
-                        </div>
-                      </Card>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </motion.div>
         </motion.div>
       </main>

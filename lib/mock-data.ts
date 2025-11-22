@@ -40,103 +40,92 @@ const baseTimestamp = new Date(now)
 export const mockMessages: Message[] = [
   {
     id: "1",
-    content: "Hey team, just pushed the new checkout flow to production 🚀",
+    content: "Anyone else still thinking about the breakfast tacos from yesterday’s standup? 🌮",
     role: "user",
-    userName: "Sarah Chen",
-    userAvatar: "SC",
-    timestamp: new Date(baseTimestamp.getTime() - 420000), // 7 min ago
+    userName: "Jules Rivera",
+    userAvatar: "JR",
+    timestamp: new Date(baseTimestamp.getTime() - 420000),
   },
   {
     id: "2",
-    content: "Nice! I'll keep an eye on the conversion metrics",
+    content: "Totally. Also, whoever keeps switching the Spotify queue to lofi beats—thank you.",
     role: "user",
-    userName: "Mike Torres",
-    userAvatar: "MT",
-    timestamp: new Date(baseTimestamp.getTime() - 410000),
+    userName: "Priya Patel",
+    userAvatar: "PP",
+    timestamp: new Date(baseTimestamp.getTime() - 405000),
   },
   {
     id: "3",
-    content: "Looks good so far. Traffic is picking up nicely 📈",
+    content: "FYI I’ll be AFK for 30 mins to help facilities haul in the new desks. Ping if urgent.",
     role: "user",
-    userName: "Sarah Chen",
-    userAvatar: "SC",
-    timestamp: new Date(baseTimestamp.getTime() - 380000),
+    userName: "Luis Ortega",
+    userAvatar: "LO",
+    timestamp: new Date(baseTimestamp.getTime() - 390000),
   },
   {
     id: "4",
-    content: "@Native can you give us an update on today's performance?",
+    content: "Native, quick gut check: are payments on track for the lunchtime promo or should we pause it?",
     role: "user",
-    userName: "Alex Kim",
-    userAvatar: "AK",
-    timestamp: new Date(baseTimestamp.getTime() - 300000), // 5 min ago
+    userName: "Priya Patel",
+    userAvatar: "PP",
+    timestamp: new Date(baseTimestamp.getTime() - 360000),
   },
   {
     id: "5",
-    content: "Of course! Today's looking great overall. Revenue is up 12.5% compared to yesterday, driven primarily by strong conversion rates in the afternoon. Your active user count increased by 8.3%, which is excellent momentum.\n\nHowever, I noticed your conversion rate dipped slightly to 3.24% (down 2.1%). This might be worth investigating - could be related to the checkout flow updates Sarah just deployed.",
+    content: "Payments look stable—success rate 98.9% over the last hour and promo redemptions are trending +14% vs yesterday. Latency on Stripe Asia edged up 6%, but still under SLA. Keep the promo live and re-check in 20 minutes; I’ll alert you if error rate crosses 1.5%.",
     role: "assistant",
-    timestamp: new Date(baseTimestamp.getTime() - 290000),
-  },
-  {
-    id: "6",
-    content: "Hmm, that conversion dip is concerning. Any ideas what's causing it?",
-    role: "user",
-    userName: "Mike Torres",
-    userAvatar: "MT",
-    timestamp: new Date(baseTimestamp.getTime() - 270000),
-  },
-  {
-    id: "7",
-    content: "Could be the new payment modal? Users might be confused by the layout",
-    role: "user",
-    userName: "Sarah Chen",
-    userAvatar: "SC",
-    timestamp: new Date(baseTimestamp.getTime() - 250000),
-  },
-  {
-    id: "8",
-    content: "Native, what do you recommend we focus on?",
-    role: "user",
-    userName: "Alex Kim",
-    userAvatar: "AK",
-    timestamp: new Date(baseTimestamp.getTime() - 230000),
-  },
-  {
-    id: "9",
-    content: "Based on the data, here are my top 3 recommendations:\n\n1. Run an A/B test - Compare the new checkout flow vs the old one. The timing of the conversion dip (right after Sarah's deploy) suggests correlation.\n\n2. Check mobile specifically - 68% of the drop is from mobile users. The new modal might have responsive design issues.\n\n3. Monitor next 2 hours - If the trend continues, consider a quick rollback while we investigate.\n\nWant me to set up the A/B test automatically?",
-    role: "assistant",
-    timestamp: new Date(baseTimestamp.getTime() - 220000),
-  },
-  {
-    id: "10",
-    content: "Good catch on mobile! I'll check the responsive design right now",
-    role: "user",
-    userName: "Sarah Chen",
-    userAvatar: "SC",
-    timestamp: new Date(baseTimestamp.getTime() - 180000),
-  },
-  {
-    id: "11",
-    content: "I'm seeing some console errors on mobile Safari. Working on a fix 🔧",
-    role: "user",
-    userName: "Sarah Chen",
-    userAvatar: "SC",
-    timestamp: new Date(baseTimestamp.getTime() - 120000), // 2 min ago
-  },
-  {
-    id: "12",
-    content: "Native update: are there any urgent issues right now?",
-    role: "user",
-    userName: "Alex Kim",
-    userAvatar: "AK",
-    timestamp: new Date(baseTimestamp.getTime() - 60000), // 1 min ago
-  },
-  {
-    id: "13",
-    content: "Yes, I have one urgent item:\n\n🚨 Payment Gateway Alert - There's an elevated error rate (4.2% vs normal 0.8%) in payment processing over the last hour. This is likely contributing to the conversion drop Sarah mentioned.\n\nI've already notified the engineering team and created a ticket. The errors are specific to Safari mobile, which aligns with Sarah's findings.\n\nOther than that, everything else is running smoothly. Your SLA compliance is at 98.7% across all services.",
-    role: "assistant",
-    timestamp: new Date(baseTimestamp.getTime() - 50000),
+    timestamp: new Date(baseTimestamp.getTime() - 350000),
   },
 ]
+
+type KeywordResponse = {
+  keywords: string[]
+  response: string
+}
+
+const keywordResponses: KeywordResponse[] = [
+  {
+    keywords: ["total revenue", "revenue"],
+    response:
+      "Total revenue is $125,430, up 12.5% versus yesterday. The uplift is driven by the lunchtime promo and higher premium-plan mix.",
+  },
+  {
+    keywords: ["active users", "users", "active"],
+    response:
+      "Active users are at 2,847, climbing 8.3%. Engagement looks healthy—retention cohorts are holding steady across desktop and mobile.",
+  },
+  {
+    keywords: ["conversion rate", "conversion", "checkout"],
+    response:
+      "Conversion rate is sitting at 3.24%, which is down 2.1%. Most of the slippage is coming from Safari mobile sessions during checkout.",
+  },
+  {
+    keywords: ["premium plans", "premium"],
+    response:
+      "Premium plan signups are surging—up 18% today, primarily from organic search traffic tied to the new brand campaign you launched.",
+  },
+  {
+    keywords: ["payment gateway", "gateway", "payment"],
+    response:
+      "Payment gateway errors ticked up to 4.2% for the last hour, which triggered the on-call alert. Engineering has the incident and mitigation is underway.",
+  },
+  {
+    keywords: ["checkout flow optimization", "checkout flow", "a/b test"],
+    response:
+      "Recommend an A/B on the new checkout flow—conversion dipped 2.1% since deployment. Let’s isolate the new modal against the previous experience.",
+  },
+]
+
+export function generateNativeResponse(query: string): string {
+  const normalized = query.toLowerCase()
+  const matched = keywordResponses.find(entry =>
+    entry.keywords.some(keyword => normalized.includes(keyword))
+  )
+
+  if (matched) return matched.response
+
+  return "Sorry, I don’t have information regarding that."
+}
 
 /**
  * Mock metrics for the overview
