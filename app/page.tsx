@@ -32,16 +32,22 @@ export default function Home() {
       setIsNativeResponding(true)
       setTimeout(() => {
         const response = generateNativeResponse(content)
-        setMessages(prev => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            content: response,
-            role: "assistant" as const,
-            timestamp: new Date(),
-          },
-        ])
-        setIsNativeResponding(false)
+        // Use flushSync to ensure DOM updates happen synchronously
+        React.startTransition(() => {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              content: response,
+              role: "assistant" as const,
+              timestamp: new Date(),
+            },
+          ])
+        })
+        // Small delay before hiding loading state to ensure message is rendered
+        setTimeout(() => {
+          setIsNativeResponding(false)
+        }, 50)
       }, 1000)
     }
   }, [])

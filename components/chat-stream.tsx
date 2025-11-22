@@ -4,7 +4,7 @@ import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn, formatRelativeTime } from "@/lib/utils"
 import { Message } from "@/lib/mock-data"
-import { slideUpFadeIn } from "@/lib/animations"
+import { chatMessageFadeIn, fadeOutOnly } from "@/lib/animations"
 
 interface ChatStreamProps {
   messages: Message[]
@@ -20,10 +20,35 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [collapsedMessages, setCollapsedMessages] = React.useState<Set<string>>(new Set())
   const [inputValue, setInputValue] = React.useState("")
+  const previousMessagesLength = React.useRef(messages.length)
+  const [newestMessageId, setNewestMessageId] = React.useState<string | null>(null)
+  const [allowAnimation, setAllowAnimation] = React.useState(true)
+  const wasRespondingRef = React.useRef(false)
 
   React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    wasRespondingRef.current = isNativeResponding
+  }, [isNativeResponding])
+
+  React.useEffect(() => {
+    if (scrollRef.current && messages.length > previousMessagesLength.current) {
+      // New message added - disable animation temporarily
+      const lastMessage = messages[messages.length - 1]
+      setNewestMessageId(lastMessage.id)
+      setAllowAnimation(false)
+      
+      // Force synchronous scroll
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      }
+      
+      // Re-enable animation after scroll and layout settle
+      const timer = setTimeout(() => {
+        setAllowAnimation(true)
+        setNewestMessageId(null)
+      }, 150)
+      
+      previousMessagesLength.current = messages.length
+      return () => clearTimeout(timer)
     }
   }, [messages])
 
@@ -45,13 +70,13 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
   }
 
   return (
-    <div className={cn("flex flex-col h-full min-h-0", className)}>
+    <div className={cn("flex flex-col h-full min-h-0 overflow-hidden", className)}>
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-5 py-6 pb-4 space-y-4 scroll-smooth minimal-scrollbar"
-        style={{ scrollBehavior: "smooth" }}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-5 py-6 pb-4 space-y-4 scroll-smooth minimal-scrollbar relative"
+        style={{ scrollBehavior: "smooth", contain: "layout style paint" }}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="popLayout" initial={false}>
           {messages.map((message) => {
             const isCollapsed = collapsedMessages.has(message.id)
             const isAssistant = message.role === "assistant"
@@ -61,13 +86,19 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
               ? message.content.slice(0, 150) + "..."
               : message.content
 
+            const isNewest = message.id === newestMessageId && !allowAnimation
+            // Check if this is the first assistant message that just replaced the loading state
+            const justReplacedLoading = isAssistant && !isNativeResponding && wasRespondingRef.current && message.id === newestMessageId
+            
             return (
               <motion.div
                 key={message.id}
-                variants={slideUpFadeIn}
-                initial="initial"
-                animate="animate"
+                layoutId={justReplacedLoading ? "native-message" : undefined}
+                variants={chatMessageFadeIn}
+                initial={isNewest ? false : "initial"}
+                animate={isNewest ? false : "animate"}
                 exit="exit"
+                style={isNewest ? { transform: 'none' } : undefined}
                 className={cn(
                   "flex items-start gap-3",
                   isSelf ? "justify-end" : "justify-start"
@@ -149,7 +180,9 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
 
           {isNativeResponding && (
             <motion.div
-              variants={slideUpFadeIn}
+              key="native-responding"
+              layoutId="native-message"
+              variants={fadeOutOnly}
               initial="initial"
               animate="animate"
               exit="exit"

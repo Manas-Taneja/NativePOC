@@ -47,6 +47,24 @@ export const slideUpFadeIn: Variants = {
 }
 
 /**
+ * Subtle fade in for chat messages (opacity only to prevent overflow issues)
+ */
+export const chatMessageFadeIn: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+}
+
+/**
+ * Fade out only (no movement) for in-place transitions
+ */
+export const fadeOutOnly: Variants = {
+  initial: { opacity: 1 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
+}
+
+/**
  * iOS-style tactile interaction for buttons
  */
 export const iosTactile: Variants = {
