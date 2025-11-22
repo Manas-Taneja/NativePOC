@@ -24,7 +24,7 @@
   --radius-3xl: 2rem;
   
   /* Font Families */
-  --font-family-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --font-family-sans: var(--font-barlow), "Barlow", sans-serif;
   --font-family-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
 }
 
@@ -70,7 +70,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   
   /* Typography (Barlow font) */
-  --font-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --font-sans: var(--font-barlow), "Barlow", sans-serif;
   --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
   
   /* Spacing Scale (iOS-style 8pt grid) */
@@ -134,7 +134,7 @@
 body {
   background: var(--color-bg-base);
   color: var(--color-fg-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-barlow), "Barlow", sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;

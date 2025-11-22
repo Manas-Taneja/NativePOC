@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${barlow.variable} antialiased`}>
+      <body className={`${barlow.className} ${barlow.variable} antialiased`}>
         <ThemeProvider>
           {children}
         </ThemeProvider>
