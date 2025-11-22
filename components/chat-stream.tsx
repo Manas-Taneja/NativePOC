@@ -26,7 +26,7 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
   const wasRespondingRef = React.useRef(false)
 
   React.useEffect(() => {
-    wasRespondingRef.current = isNativeResponding
+    wasRespondingRef.current = isNativeResponding ?? false
   }, [isNativeResponding])
 
   React.useEffect(() => {
