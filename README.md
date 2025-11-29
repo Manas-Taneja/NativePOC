@@ -5,6 +5,7 @@ A modern, iOS-inspired dashboard built with Next.js, featuring refined minimalis
 ## ✨ Features
 
 - **iOS-Inspired Design** - Clean, minimal interface with iOS-style design patterns
+- **Authentication** - Secure authentication via Supabase (Email/Password + Invite System)
 - **Real-time Chat Stream** - Smooth streaming message animation with collapsible long messages
 - **Workspace Sidebar** - Channel + member list mirrored from the NativeIQ Nuxt app
 - **Insight & KPI Panels** - Pulls from shared `@native/types` + `@native/ui` packages
@@ -19,6 +20,7 @@ A modern, iOS-inspired dashboard built with Next.js, featuring refined minimalis
 - **Styling:** Tailwind CSS
 - **Animations:** Framer Motion
 - **Theme:** next-themes
+- **Backend:** Supabase (Auth, Postgres, Realtime)
 - **LLM:** OpenAI Responses API (via `openai` SDK)
 - **Packages:** npm workspaces (`packages/types`, `packages/ui`, `packages/utils`)
 
@@ -42,15 +44,18 @@ npm start
 
 1. Clone the repository
 2. Install dependencies with `npm install`
-3. Run the development server with `npm run dev`
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+3. Create `.env.local` and configure environment variables (see [Environment](#-environment))
+4. Run the development server with `npm run dev`
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## 📁 Project Structure
 
 ```
 ├── app/
-│   ├── api/               # Next route handlers (chat, insights, tasks, policy)
+│   ├── (auth)/            # Authentication pages (login, signup)
+│   ├── api/               # Next route handlers (chat, insights, tasks, policy, invite)
 │   └── (pages + layout + globals)
+├── middleware.ts          # Auth middleware (Supabase session handling)
 ├── components/
 │   ├── channel-sidebar.tsx
 │   ├── sections/          # Signal ticker, business insights, etc.
@@ -75,6 +80,7 @@ All handlers live under `app/api` and mirror the Nuxt server endpoints:
 | `/api/insights` | GET | Returns insight objects filtered by `type`, `impact`, or `team`. |
 | `/api/tasks` | GET | Filters mock tasks by `assignee` or `state`. |
 | `/api/tasks/from-thread` | POST | Creates a placeholder task from a Slack thread payload. |
+| `/api/invite` | POST | Generates a new invite code for an organization. |
 | `/api/policy/check` | POST | Simulated policy decision envelope (`allow`, `policy_id`, `rationale`). |
 
 ## 🔐 Environment
@@ -141,15 +147,3 @@ Customize theme colors in `app/globals.css`:
   /* ...more variables */
 }
 ```
-
-## 📄 License
-
-MIT License - feel free to use this project for your own purposes.
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!
-
----
-
-Built with ❤️ using Next.js and Framer Motion
