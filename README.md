@@ -6,20 +6,21 @@ A modern, iOS-inspired dashboard built with Next.js, featuring refined minimalis
 
 - **iOS-Inspired Design** - Clean, minimal interface with iOS-style design patterns
 - **Real-time Chat Stream** - Smooth streaming message animation with collapsible long messages
-- **Metric Tiles** - Dynamic metric cards with trend indicators
-- **Insight Cards** - Priority-based insight display with status indicators
+- **Workspace Sidebar** - Channel + member list mirrored from the NativeIQ Nuxt app
+- **Insight & KPI Panels** - Pulls from shared `@native/types` + `@native/ui` packages
+- **Next.js Route Handlers** - `/api/chat`, `/api/insights`, `/api/tasks`, `/api/policy/check`
 - **Dark Mode** - Seamless light/dark theme switching
-- **Responsive Layout** - Collapsible metric column for flexible viewing
 - **Smooth Animations** - Framer Motion powered transitions and interactions
 
 ## 🛠 Tech Stack
 
-- **Framework:** Next.js 15.1.4
+- **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **Animations:** Framer Motion
-- **Icons:** Lucide React
 - **Theme:** next-themes
+- **LLM:** OpenAI Responses API (via `openai` SDK)
+- **Packages:** npm workspaces (`packages/types`, `packages/ui`, `packages/utils`)
 
 ## 📦 Installation
 
@@ -48,24 +49,47 @@ npm start
 
 ```
 ├── app/
-│   ├── page.tsx           # Main dashboard page
-│   ├── layout.tsx         # Root layout with theme provider
-│   └── globals.css        # Global styles and CSS variables
+│   ├── api/               # Next route handlers (chat, insights, tasks, policy)
+│   └── (pages + layout + globals)
 ├── components/
-│   ├── chat-stream.tsx    # Chat interface with streaming
-│   ├── dashboard-header.tsx
-│   ├── theme-provider.tsx
-│   ├── theme-toggle.tsx
-│   └── ui/                # Reusable UI components
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── insight-card.tsx
-│       └── metric-tile.tsx
-└── lib/
-    ├── animations.ts      # Framer Motion variants
-    ├── mock-data.ts       # Sample data
-    └── utils.ts           # Utility functions
+│   ├── channel-sidebar.tsx
+│   ├── sections/          # Signal ticker, business insights, etc.
+│   └── ui/                # Local wrappers around design-system primitives
+├── lib/
+│   ├── mock-data.ts       # Sample data + shared mock channels/members
+│   └── server-data.ts     # Backend seed used by API routes
+└── packages/              # npm workspaces lifted from NativeIQ
+    ├── types/             # `@native/types`
+    ├── ui/                # `@native/ui` (React components + CSS tokens)
+    └── utils/             # `@native/utils` (formatters/helpers)
+
 ```
+
+## 🔌 API Routes
+
+All handlers live under `app/api` and mirror the Nuxt server endpoints:
+
+| Route | Method | Description |
+| --- | --- | --- |
+| `/api/chat` | POST | Calls OpenAI (`gpt-4o`) with history + system prompt. Requires `OPENAI_API_KEY`. |
+| `/api/insights` | GET | Returns insight objects filtered by `type`, `impact`, or `team`. |
+| `/api/tasks` | GET | Filters mock tasks by `assignee` or `state`. |
+| `/api/tasks/from-thread` | POST | Creates a placeholder task from a Slack thread payload. |
+| `/api/policy/check` | POST | Simulated policy decision envelope (`allow`, `policy_id`, `rationale`). |
+
+## 🔐 Environment
+
+Create `.env.local` in the `NativePOC` directory with:
+
+```
+OPENAI_API_KEY=sk-your-key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+**Note:** If you're migrating from NativeIQ, the code also supports the old variable names (`SUPABASE_URL` and `SUPABASE_KEY`) for compatibility. You can copy your `.env` file from NativeIQ and it will work.
+
+The Supabase keys enable realtime chat channels; the OpenAI key powers `/api/chat` and the assistant responses. Restart `npm run dev` after updating env vars.
 
 ## 🎨 Design System
 
@@ -95,24 +119,17 @@ The app supports both light and dark modes with:
 
 ## 📝 Key Features
 
-### Chat Stream
+### Chat + Channels
 - Character-by-character streaming animation
-- Collapsible long messages
-- Timestamp display
-- User/AI avatars
+- Collapsible long messages and loader state
+- Channel sidebar with AI + team channels and members
 - Auto-scroll to latest message
 
-### Metrics Dashboard
+### Metrics & Insights
 - Collapsible right column
-- Real-time metric updates
-- Trend indicators (up/down)
-- Quick action buttons
-
-### Responsive Design
-- Mobile-first approach
-- Adaptive grid layouts
-- Touch-friendly interactions
-- Minimal scrollbars
+- Reuses `@native/ui` MetricTile + InsightCard components
+- Signal ticker mixing SLA deltas + insight headlines
+- Quick actions module
 
 ## 🔧 Configuration
 

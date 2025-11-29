@@ -9,6 +9,11 @@ export interface Message {
   timestamp: Date
   userName?: string  // For multi-user chat
   userAvatar?: string  // User initials or avatar
+  author_id?: string | null
+  author?: {
+    full_name: string | null
+    avatar_url: string | null
+  }
 }
 
 export interface Metric {
@@ -20,13 +25,8 @@ export interface Metric {
   }
 }
 
-export interface Insight {
-  id: string
-  title: string
-  description: string
-  type: "alert" | "suggestion" | "info"
-  timestamp: Date
-}
+import type { Insight, SlaMetric } from "@native/types"
+import { insights as insightSeed, slaMetrics as slaSeed } from "@/lib/server-data"
 
 /**
  * Mock chat messages - Multi-person team conversation
@@ -151,27 +151,54 @@ export const mockMetrics: Metric[] = [
 /**
  * Mock insights
  */
-export const mockInsights: Insight[] = [
+export const mockInsights: Insight[] = insightSeed
+
+export interface Channel {
+  id: string
+  organizationId: string
+  name: string
+  description?: string | null
+  type: "team" | "ai-assistant" | "direct"
+}
+
+export interface ChatMember {
+  id: string
+  fullName: string
+  avatarUrl?: string | null
+  role: "owner" | "admin" | "member"
+}
+
+export const mockChannels: Channel[] = [
   {
-    id: "1",
-    title: "Premium Plans Surge",
-    description: "Premium plan signups increased 18% today, primarily from organic search traffic.",
-    type: "info",
-    timestamp: new Date(baseTimestamp.getTime() - 120000),
+    id: "channel-ai",
+    organizationId: "org-native",
+    name: "Native Reports",
+    description: "AI assistant briefings",
+    type: "ai-assistant",
   },
   {
-    id: "2",
-    title: "Payment Gateway Issues",
-    description: "Elevated error rate detected in payment processing. Engineering team notified.",
-    type: "alert",
-    timestamp: new Date(baseTimestamp.getTime() - 50000),
+    id: "channel-team",
+    organizationId: "org-native",
+    name: "#gtm-squad",
+    description: "Growth + GTM coordination",
+    type: "team",
   },
   {
-    id: "3",
-    title: "Checkout Flow Optimization",
-    description: "Consider A/B testing the new checkout flow - conversion rate dipped 2.1% since deployment.",
-    type: "suggestion",
-    timestamp: new Date(baseTimestamp.getTime() - 180000),
+    id: "channel-direct",
+    organizationId: "org-native",
+    name: "Ops ↔ Finance",
+    description: "Direct escalation lane",
+    type: "direct",
   },
 ]
+
+export const mockMembers: ChatMember[] = [
+  { id: "member-1", fullName: "Priya Patel", role: "owner" },
+  { id: "member-2", fullName: "Luis Ortega", role: "admin" },
+  { id: "member-3", fullName: "Jules Rivera", role: "member" },
+  { id: "member-4", fullName: "Alex Martinez", role: "member" },
+  { id: "member-5", fullName: "Jordan Lee", role: "member" },
+]
+
+export const mockSlaMetrics: SlaMetric[] = slaSeed
 

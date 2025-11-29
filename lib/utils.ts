@@ -1,5 +1,10 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import {
+  clamp as sharedClamp,
+  formatRelativeTime as sharedFormatRelativeTime,
+  formatAsPercent,
+} from "@native/utils"
 
 /**
  * Merge Tailwind CSS classes with clsx
@@ -9,30 +14,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/**
- * Format relative time (e.g., "2 hours ago", "Tomorrow")
- */
-export function formatRelativeTime(date: Date): string {
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  const diffInDays = Math.floor(diffInHours / 24)
-
-  if (diffInSeconds < 60) {
-    return "just now"
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`
-  } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`
-  } else if (diffInDays === 1) {
-    return "yesterday"
-  } else if (diffInDays < 7) {
-    return `${diffInDays}d ago`
-  } else {
-    return date.toLocaleDateString()
-  }
-}
+export const formatRelativeTime = (date: Date | string | number) =>
+  sharedFormatRelativeTime(date)
 
 /**
  * Format number with commas (e.g., 1000 -> 1,000)
@@ -55,7 +38,7 @@ export function formatCurrency(amount: number, currency = "USD"): string {
  * Format percentage (e.g., 0.1234 -> 12.3%)
  */
 export function formatPercentage(value: number, decimals = 1): string {
-  return `${(value * 100).toFixed(decimals)}%`
+  return formatAsPercent(value, decimals)
 }
 
 /**
@@ -81,7 +64,7 @@ export function getInitials(name: string): string {
 /**
  * Debounce function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -97,4 +80,6 @@ export function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(later, wait)
   }
 }
+
+export const clamp = sharedClamp
 

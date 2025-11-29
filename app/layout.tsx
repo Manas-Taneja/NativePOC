@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow } from "next/font/google";
 import "./globals.css";
+import "@native/ui/styles";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const barlow = Barlow({

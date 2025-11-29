@@ -24,10 +24,18 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
   const [newestMessageId, setNewestMessageId] = React.useState<string | null>(null)
   const [allowAnimation, setAllowAnimation] = React.useState(true)
   const wasRespondingRef = React.useRef(false)
+  const [justReplacedMessageId, setJustReplacedMessageId] = React.useState<string | null>(null)
 
   React.useEffect(() => {
+    const wasResponding = wasRespondingRef.current
     wasRespondingRef.current = isNativeResponding ?? false
-  }, [isNativeResponding])
+
+    if (!isNativeResponding && wasResponding && newestMessageId) {
+      setJustReplacedMessageId(newestMessageId)
+    } else if (isNativeResponding) {
+      setJustReplacedMessageId(null)
+    }
+  }, [isNativeResponding, newestMessageId])
 
   React.useEffect(() => {
     if (scrollRef.current && messages.length > previousMessagesLength.current) {
@@ -35,18 +43,18 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
       const lastMessage = messages[messages.length - 1]
       setNewestMessageId(lastMessage.id)
       setAllowAnimation(false)
-      
+
       // Force synchronous scroll
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight
       }
-      
+
       // Re-enable animation after scroll and layout settle
       const timer = setTimeout(() => {
         setAllowAnimation(true)
         setNewestMessageId(null)
       }, 150)
-      
+
       previousMessagesLength.current = messages.length
       return () => clearTimeout(timer)
     }
@@ -80,7 +88,8 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
           {messages.map((message) => {
             const isCollapsed = collapsedMessages.has(message.id)
             const isAssistant = message.role === "assistant"
-            const isSelf = message.userName === "You"
+            // Check if this message is from the current user by comparing author_id
+            const isSelf = message.author_id === (window as any).__currentUserId
             const shouldShowCollapse = isAssistant && message.content.length > 200
             const content = isCollapsed && shouldShowCollapse
               ? message.content.slice(0, 150) + "..."
@@ -88,8 +97,13 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
 
             const isNewest = message.id === newestMessageId && !allowAnimation
             // Check if this is the first assistant message that just replaced the loading state
-            const justReplacedLoading = isAssistant && !isNativeResponding && wasRespondingRef.current && message.id === newestMessageId
-            
+            const justReplacedLoading = isAssistant && message.id === justReplacedMessageId
+
+            // Get display name
+            const displayName = isAssistant
+              ? "Native"
+              : message.author?.full_name || "User"
+
             return (
               <motion.div
                 key={message.id}
@@ -113,7 +127,7 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
                     ) : (
                       <div className="h-8 w-8 rounded-full bg-[var(--color-bg-subtle)] border border-[var(--color-border-muted)] flex items-center justify-center">
                         <span className="text-[var(--color-fg-secondary)] font-medium text-xs">
-                          {message.userAvatar || "U"}
+                          {displayName.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
@@ -122,7 +136,7 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
 
                 <div className={cn("flex flex-col gap-1 max-w-[70%]", isSelf && "items-end text-right")}>
                   <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1">
-                    {isAssistant ? "Native" : message.userName || "User"}
+                    {displayName}
                   </span>
 
                   <div

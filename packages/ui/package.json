@@ -1,0 +1,20 @@
+{
+  "name": "@native/ui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "type": "module",
+  "sideEffects": [
+    "src/styles/base.css",
+    "src/styles/tokens.css"
+  ],
+  "dependencies": {
+    "@native/types": "file:../types",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.24"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  }
+}

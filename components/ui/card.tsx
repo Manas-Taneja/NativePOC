@@ -33,30 +33,17 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       accent: "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)] border-l-4 border-l-[var(--color-accent)]",
     }
 
-    const MotionComponent = variant === "interactive" ? motion.div : "div"
     const motionProps = variant === "interactive" ? cardHoverAnimation : {}
 
-    if (variant === "interactive") {
-      return (
-        <motion.div
-          ref={ref}
-          className={cn(baseStyles, variantStyles[variant], className)}
-          {...motionProps}
-          {...props}
-        >
-          {children}
-        </motion.div>
-      )
-    }
-
     return (
-      <div
+      <motion.div
         ref={ref}
         className={cn(baseStyles, variantStyles[variant], className)}
-        {...(props as any)}
+        {...motionProps}
+        {...props}
       >
         {children}
-      </div>
+      </motion.div>
     )
   }
 )

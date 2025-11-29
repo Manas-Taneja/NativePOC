@@ -18,8 +18,15 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@native/types": ["packages/types/src"],
+      "@native/types/*": ["packages/types/src/*"],
+      "@native/ui": ["packages/ui/src"],
+      "@native/ui/*": ["packages/ui/src/*"],
+      "@native/utils": ["packages/utils/src"],
+      "@native/utils/*": ["packages/utils/src/*"]
     }
   },
   "include": [

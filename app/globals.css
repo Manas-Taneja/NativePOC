@@ -237,3 +237,17 @@ body {
   opacity: 1;
 }
 
+.animate-marquee {
+  display: inline-flex;
+  animation: ticker-marquee 30s linear infinite;
+}
+
+@keyframes ticker-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
