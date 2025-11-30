@@ -48,22 +48,13 @@ export function ChannelSidebar({
 
   return (
     <div className="hidden lg:block">
-      {/* Hover handle */}
-      <div
-        className="fixed inset-y-0 left-0 w-6 pointer-events-auto z-[70]"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-24 rounded-r-full bg-[var(--color-bg-elevated)]/70 hover:bg-[var(--color-accent)]/50 transition-colors shadow-lg"
-        />
-      </div>
+
 
       {/* Drawer */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full w-64 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] shadow-2xl transition-transform duration-300 ease-in-out pointer-events-auto z-[65]",
-          isExpanded ? "translate-x-0" : "-translate-x-full",
+          "fixed top-0 left-0 h-full w-64 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] shadow-2xl transition-transform duration-300 ease-in-out pointer-events-auto z-[65] rounded-r-3xl",
+          isExpanded ? "translate-x-0" : "translate-x-[calc(-100%+16px)]",
           className,
         )}
         onMouseEnter={() => setIsHovered(true)}
