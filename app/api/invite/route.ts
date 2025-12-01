@@ -64,7 +64,23 @@ export async function POST(request: Request) {
         }
 
         // Generate invite link
-        const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/signup?invite=${inviteCode}`
+        let baseUrl = process.env.NEXT_PUBLIC_APP_URL
+
+        if (!baseUrl) {
+            const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
+            if (vercelUrl) {
+                baseUrl = `https://${vercelUrl}`
+            } else {
+                const host = request.headers.get("host")
+                const protocol = host?.includes("localhost") ? "http" : "https"
+                baseUrl = host ? `${protocol}://${host}` : "http://localhost:3000"
+            }
+        }
+
+        // Ensure no trailing slash
+        baseUrl = baseUrl.replace(/\/$/, "")
+
+        const inviteLink = `${baseUrl}/signup?invite=${inviteCode}`
 
         return NextResponse.json({
             success: true,
