@@ -22,21 +22,21 @@ export function MetricTile({ label, value, trend, className }: MetricTileProps) 
   return (
     <Card 
       className={cn(
-        "p-5 relative overflow-hidden",
-        trend && "border-t-[3px]",
-        trend?.direction === "up" && "border-t-[var(--color-success)]",
-        trend?.direction === "down" && "border-t-[var(--color-error)]",
+        "p-4 relative overflow-hidden border-l-[3px]",
+        trend && trend.direction === "up" && "border-l-[var(--color-success)]",
+        trend && trend.direction === "down" && "border-l-[var(--color-error)]",
+        !trend && "border-l-[var(--color-accent)]",
         className
       )}
     >
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col space-y-1">
         {/* Label */}
-        <p className="text-sm text-[var(--color-fg-secondary)]">
+        <p className="text-xs text-[var(--color-fg-secondary)] font-ui">
           {label}
         </p>
         
         {/* Value */}
-        <p className="text-3xl font-semibold text-[var(--color-fg-primary)] tabular-nums">
+        <p className="text-2xl font-semibold text-[var(--color-fg-primary)] tabular-nums font-heading tracking-wide">
           {value}
         </p>
         
@@ -67,7 +67,7 @@ export function MetricTile({ label, value, trend, className }: MetricTileProps) 
             {/* Percentage */}
             <span
               className={cn(
-                "text-sm font-medium tabular-nums",
+                "text-sm font-medium tabular-nums font-ui",
                 trend.direction === "up"
                   ? "text-[var(--color-success)]"
                   : "text-[var(--color-error)]"

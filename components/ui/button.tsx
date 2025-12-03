@@ -22,7 +22,7 @@ export interface ButtonProps
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "medium", className, children, ...props }, ref) => {
-    const baseStyles = "rounded-full font-medium transition-colors duration-200 inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+    const baseStyles = "rounded-lg font-medium transition-colors duration-200 inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
     
     const variantStyles = {
       primary: "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]",

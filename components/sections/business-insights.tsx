@@ -1,6 +1,7 @@
 "use client"
 
 import type { Insight, SlaMetric } from "@native/types"
+import { cn } from "@/lib/utils"
 
 type BusinessInsightsProps = {
   company?: string
@@ -61,11 +62,11 @@ export function BusinessInsights({ company = "Native", insights, metrics }: Busi
   ]
 
   return (
-    <section className="card-surface section-block border border-[var(--color-border-subtle)] rounded-3xl bg-[var(--color-bg-elevated)] p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <section className="card-surface section-block border border-[var(--color-border-subtle)] rounded-2xl bg-[var(--color-bg-elevated)] p-4 space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-fg-tertiary)]">Business Insights</p>
-          <h3 className="text-2xl font-semibold text-[var(--color-fg-primary)] mt-2">
+          <h3 className="text-2xl font-semibold text-[var(--color-fg-primary)] mt-2 font-heading tracking-wide">
             One-screen pulse for {company}
           </h3>
         </div>
@@ -77,17 +78,31 @@ export function BusinessInsights({ company = "Native", insights, metrics }: Busi
         </button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {cards.map((card) => (
-          <article
-            key={card.id}
-            className="rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] p-4 space-y-2"
-          >
-            <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-fg-tertiary)]">{card.label}</span>
-            <h4 className="text-lg font-semibold text-[var(--color-fg-primary)]">{card.title}</h4>
-            <p className="text-sm text-[var(--color-fg-secondary)] leading-relaxed">{card.detail}</p>
-          </article>
-        ))}
+      <div className="grid gap-3 md:grid-cols-2">
+        {cards.map((card) => {
+          const accentColors = {
+            risk: "border-l-4 border-l-[var(--color-error)] bg-gradient-to-r from-[var(--color-error)]/5 to-transparent",
+            growth: "border-l-4 border-l-[var(--color-success)] bg-gradient-to-r from-[var(--color-success)]/5 to-transparent",
+            focus: "border-l-4 border-l-[var(--color-accent-secondary)] bg-gradient-to-r from-[var(--color-accent-secondary)]/5 to-transparent",
+          }
+          const accentClass = accentColors[card.accent as keyof typeof accentColors] || ""
+          const labelColors = {
+            risk: "text-[var(--color-error)]",
+            growth: "text-[var(--color-success)]",
+            focus: "text-[var(--color-accent-secondary)]",
+          }
+          const labelClass = labelColors[card.accent as keyof typeof labelColors] || "text-[var(--color-fg-tertiary)]"
+          return (
+            <article
+              key={card.id}
+              className={cn("rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] p-3 space-y-1.5", accentClass)}
+            >
+              <span className={cn("text-xs uppercase tracking-[0.3em] font-semibold", labelClass)}>{card.label}</span>
+              <h4 className="text-lg font-semibold text-[var(--color-fg-primary)] font-heading tracking-wide">{card.title}</h4>
+              <p className="text-sm text-[var(--color-fg-secondary)] leading-relaxed">{card.detail}</p>
+            </article>
+          )
+        })}
       </div>
     </section>
   )

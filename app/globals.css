@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-bg-base: #0a0a0a;
-  --color-bg-elevated: #141414;
-  --color-bg-subtle: #1a1a1a;
-  --color-fg-primary: #fafafa;
-  --color-fg-secondary: #a1a1a1;
-  --color-fg-tertiary: #525252;
-  --color-accent: #3b82f6;
-  --color-accent-hover: #60a5fa;
+  /* Colors - Brand Standard (Light Mode Default) */
+  --color-bg-base: #ffffff;
+  --color-bg-elevated: #f8f9fa;
+  --color-bg-subtle: #f1f3f5;
+  --color-fg-primary: #1a1a1a;
+  --color-fg-secondary: #525252;
+  --color-fg-tertiary: #a1a1a1;
+  --color-accent: #768863;
+  --color-accent-hover: #6a7a58;
+  --color-accent-secondary: #93b6b4;
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
@@ -19,44 +20,68 @@
   --spacing-10: 2.5rem;
   --spacing-11: 2.75rem;
   
-  /* Border Radius */
-  --radius-2xl: 1.5rem;
-  --radius-3xl: 2rem;
+  /* Border Radius - Brand Standard */
+  --radius-sm: 0.5rem;     /* 8px */
+  --radius-md: 0.75rem;    /* 12px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-3xl: 1.5rem;    /* 24px */
   
   /* Font Families */
   --font-family-sans: var(--font-barlow), "Barlow", sans-serif;
+  --font-family-sans-condensed: var(--font-barlow-condensed), "Barlow Semi Condensed", sans-serif;
   --font-family-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
 }
 
 /* iOS-Inspired Refined Minimalism Design Tokens */
 
-/* Light Mode (Default) */
+/* Light Mode (Default) - Brand Colors - Refined */
 :root {
   --color-bg-base: #ffffff;
   --color-bg-elevated: #f8f9fa;
   --color-bg-subtle: #f1f3f5;
+  --color-bg-sidebar: #f8f9fa;
+  --color-bg-card: #f8f9fa;
   
-  --color-border-subtle: rgba(0, 0, 0, 0.06);
-  --color-border-muted: rgba(0, 0, 0, 0.1);
-  --color-border-default: rgba(0, 0, 0, 0.15);
+  --color-border-subtle: rgba(26, 26, 26, 0.08);
+  --color-border-muted: rgba(26, 26, 26, 0.12);
+  --color-border-default: rgba(26, 26, 26, 0.18);
   
-  --color-fg-primary: #0a0a0a;
-  --color-fg-secondary: #525252;
-  --color-fg-tertiary: #a1a1a1;
+  /* Text Colors - Brand Standard */
+  --color-fg-primary: #1a1a1a;
+  --color-fg-secondary: #6b7280;
+  --color-fg-tertiary: #9ca3af;
   --color-fg-disabled: #d1d5db;
   
-  /* Single Strategic Accent (iOS Blue) */
-  --color-accent: #3b82f6;
-  --color-accent-hover: #60a5fa;
-  --color-accent-muted: rgba(59, 130, 246, 0.1);
-  --color-accent-border: rgba(59, 130, 246, 0.3);
+  /* Primary Action - Olive Green */
+  --color-accent: #768863;
+  --color-accent-hover: #6a7a58;
+  --color-accent-muted: rgba(118, 136, 99, 0.1);
+  --color-accent-border: rgba(118, 136, 99, 0.3);
+  --color-accent-active-bg: rgba(147, 182, 180, 0.1);
   
-  /* Semantic Colors (minimal use) */
-  --color-success: #22c55e;
+  /* Secondary Accents - Teal */
+  --color-accent-secondary: #93b6b4;
+  --color-accent-secondary-hover: #7fa5a3;
+  --color-accent-secondary-muted: rgba(147, 182, 180, 0.1);
+  --color-accent-secondary-border: rgba(147, 182, 180, 0.3);
+  
+  /* Chat Bubble Colors - Light Mode */
+  --color-chat-user-bg: #768863;
+  --color-chat-user-text: #ffffff;
+  --color-chat-system-bg: #f3f4f6;
+  --color-chat-system-text: #1a1a1a;
+  
+  /* Avatar Colors */
+  --color-avatar-bg: #93b6b4;
+  --color-avatar-text: #ffffff;
+  
+  /* Semantic Colors - Earthy Aesthetic */
+  --color-success: #768863;
   --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  --color-error: #cf6679;
   
-  /* Elevation & Depth (iOS-style soft shadows) */
+  /* Elevation & Depth - Crisp Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -69,8 +94,9 @@
     0 8px 32px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   
-  /* Typography (Barlow font) */
+  /* Typography - Brand Standard */
   --font-sans: var(--font-barlow), "Barlow", sans-serif;
+  --font-sans-condensed: var(--font-barlow-condensed), "Barlow Semi Condensed", sans-serif;
   --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
   
   /* Spacing Scale (iOS-style 8pt grid) */
@@ -86,13 +112,13 @@
   --space-12: 3rem;     /* 48px */
   --space-16: 4rem;     /* 64px - iOS nav bar height */
   
-  /* Borders & Radii (iOS-style generous curves) */
+  /* Borders & Radii (Brand Standard - Organic Feel) */
   --radius-sm: 0.5rem;     /* 8px */
   --radius-md: 0.75rem;    /* 12px */
-  --radius-lg: 1rem;       /* 16px - iOS standard */
-  --radius-xl: 1.25rem;    /* 20px - iOS bubbles */
-  --radius-2xl: 1.5rem;    /* 24px - iOS large cards */
-  --radius-3xl: 2rem;      /* 32px - iOS modals/sheets */
+  --radius-lg: 0.75rem;    /* 12px - cards, bubbles */
+  --radius-xl: 0.75rem;    /* 12px - buttons */
+  --radius-2xl: 1rem;      /* 16px - modals */
+  --radius-3xl: 1.5rem;    /* 24px - large modals */
   
   /* iOS-style spring animation config */
   --spring-stiffness: 300;
@@ -102,22 +128,53 @@
   --touch-target: 44px;
 }
 
-/* Dark Mode */
+/* Dark Mode - Deep Forest Theme */
 .dark {
-  --color-bg-base: #0a0a0a;
-  --color-bg-elevated: #141414;
-  --color-bg-subtle: #1a1a1a;
+  --color-bg-base: #151715;
+  --color-bg-elevated: #1e221e;
+  --color-bg-subtle: #1e221e;
+  --color-bg-sidebar: #1e221e;
+  --color-bg-card: #1e221e;
   
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-border-muted: rgba(255, 255, 255, 0.1);
-  --color-border-default: rgba(255, 255, 255, 0.15);
+  --color-border-subtle: rgba(243, 244, 246, 0.08);
+  --color-border-muted: rgba(243, 244, 246, 0.12);
+  --color-border-default: rgba(243, 244, 246, 0.18);
   
-  --color-fg-primary: #fafafa;
-  --color-fg-secondary: #a1a1a1;
-  --color-fg-tertiary: #525252;
-  --color-fg-disabled: #3a3a3a;
+  /* Text Hierarchy - Off-white for headings, light grey for body */
+  --color-fg-primary: #f3f4f6;
+  --color-fg-secondary: #d1d5db;
+  --color-fg-tertiary: #9ca3af;
+  --color-fg-disabled: #6b7280;
   
-  /* Dark mode shadows (more prominent) */
+  /* Primary Action - Teal (better contrast on dark) */
+  --color-accent: #93b6b4;
+  --color-accent-hover: #7fa5a3;
+  --color-accent-muted: rgba(147, 182, 180, 0.15);
+  --color-accent-border: rgba(147, 182, 180, 0.3);
+  --color-accent-active-bg: rgba(118, 136, 99, 0.15);
+  
+  /* Secondary Accents - Olive (for active states, accents) */
+  --color-accent-secondary: #768863;
+  --color-accent-secondary-hover: #6a7a58;
+  --color-accent-secondary-muted: rgba(118, 136, 99, 0.15);
+  --color-accent-secondary-border: rgba(118, 136, 99, 0.3);
+  
+  /* Chat Bubble Colors - Dark Mode */
+  --color-chat-user-bg: #93b6b4;
+  --color-chat-user-text: #151715;
+  --color-chat-system-bg: #27272a;
+  --color-chat-system-text: #d1d5db;
+  
+  /* Avatar Colors */
+  --color-avatar-bg: #93b6b4;
+  --color-avatar-text: #151715;
+  
+  /* Semantic Colors - Earthy Aesthetic */
+  --color-success: #768863;
+  --color-warning: #f59e0b;
+  --color-error: #cf6679;
+  
+  /* Dark mode shadows - Crisp and prominent */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
@@ -138,6 +195,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Typography Utilities - Brand Standard */
+.font-ui {
+  font-family: var(--font-barlow-condensed), "Barlow Semi Condensed", sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-barlow), "Barlow", sans-serif;
 }
 
 /* iOS-style smooth scrolling */

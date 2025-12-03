@@ -153,7 +153,7 @@ export default function Home() {
           metrics={mockSlaMetrics}
           onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
         />
-        <main className="max-w-[1800px] mx-auto px-5 md:px-8 py-4 space-y-6">
+        <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 space-y-4">
           {chatError && (
             <ErrorMessage 
               error={chatError}
@@ -164,20 +164,20 @@ export default function Home() {
             initial="initial"
             animate="animate"
             variants={staggerContainer}
-            className="space-y-8"
+            className="space-y-4"
           >
             {/* Two Column Layout: Chat + Overview */}
             <motion.div
               variants={staggerItem}
-              className={`grid grid-cols-1 gap-6 transition-all duration-300 ${isRightColumnVisible ? "lg:grid-cols-[minmax(0,0.7fr)_minmax(0,0.3fr)]" : "lg:grid-cols-1"
+              className={`grid grid-cols-1 gap-3 transition-all duration-300 ${isRightColumnVisible ? "lg:grid-cols-[2fr_1fr]" : "lg:grid-cols-1"
                 }`}
             >
               {/* Left Column: Native Chat Stream */}
-              <Card className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-                <div className="border-b border-[var(--color-border-subtle)] p-5">
+              <Card className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
+                <div className="border-b border-[var(--color-border-subtle)] p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-secondary)] flex items-center justify-center shadow-lg">
                         <svg
                           className="w-6 h-6 text-white"
                           fill="none"
@@ -193,7 +193,7 @@ export default function Home() {
                         </svg>
                       </div>
                       <div>
-                        <h2 className="text-base font-semibold text-[var(--color-fg-primary)]">
+                        <h2 className="text-base font-semibold text-[var(--color-fg-primary)] font-heading tracking-wide">
                           {currentChannel?.type === "direct"
                             ? (() => {
                               const participants = currentChannel.metadata?.participants || []
@@ -204,7 +204,7 @@ export default function Home() {
                             : currentChannel?.name || "Chat"
                           }
                         </h2>
-                        <p className="text-sm text-[var(--color-fg-tertiary)]">
+                        <p className="text-sm text-[var(--color-fg-tertiary)] font-ui">
                           {currentChannel?.type === "direct"
                             ? "Direct message"
                             : currentChannel?.description || (currentChannel?.type === "ai-assistant" ? "AI Assistant" : `${members.length} members`)
@@ -244,7 +244,7 @@ export default function Home() {
                 </div>
 
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-5">
+                <div className="flex-1 overflow-y-auto p-4">
                   {!currentChannel ? (
                     <div className="h-full flex items-center justify-center text-[var(--color-fg-tertiary)]">
                       <div className="text-center">
@@ -271,7 +271,7 @@ export default function Home() {
                     className="space-y-6"
                   >
                     {/* Metrics */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {mockMetrics.map((metric, i) => (
                         <MetricTile
                           key={i}
@@ -284,10 +284,10 @@ export default function Home() {
 
                     {/* Insights */}
                     <div>
-                      <h3 className="text-lg font-semibold text-[var(--color-fg-primary)] mb-4">
+                      <h3 className="text-base font-semibold text-[var(--color-fg-primary)] mb-3 font-heading tracking-wide">
                         Key Insights
                       </h3>
-                      <div className="space-y-4">
+                      <div className="space-y-2">
                         {mockInsights.map((insight) => (
                           <InlineInsightCard key={insight.id} insight={insight} />
                         ))}

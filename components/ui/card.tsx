@@ -23,14 +23,14 @@ export interface CardProps extends Omit<HTMLMotionProps<"div">, "ref"> {
  */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ variant = "default", className, children, ...props }, ref) => {
-    const baseStyles = "rounded-2xl transition-colors duration-200"
+    const baseStyles = "rounded-lg transition-colors duration-200"
     
     const variantStyles = {
-      default: "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)]",
-      interactive: "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)] cursor-pointer",
-      flat: "bg-[var(--color-bg-elevated)] border-0",
-      grouped: "bg-[var(--color-bg-elevated)] border-0 overflow-hidden",
-      accent: "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)] border-l-4 border-l-[var(--color-accent)]",
+      default: "bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)]",
+      interactive: "bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)] cursor-pointer",
+      flat: "bg-[var(--color-bg-card)] border-0",
+      grouped: "bg-[var(--color-bg-card)] border-0 overflow-hidden",
+      accent: "bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)] border-l-4 border-l-[var(--color-accent)]",
     }
 
     const motionProps = variant === "interactive" ? cardHoverAnimation : {}
@@ -58,7 +58,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-5", className)}
+    className={cn("flex flex-col space-y-1.5 p-4", className)}
     {...props}
   />
 ))
@@ -104,7 +104,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-5 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-4 pt-0", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
@@ -117,7 +117,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-5 pt-0", className)}
+    className={cn("flex items-center p-4 pt-0", className)}
     {...props}
   />
 ))

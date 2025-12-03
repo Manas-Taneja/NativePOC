@@ -24,7 +24,7 @@ export function ChatSkeleton() {
           <LoadingSkeleton className="h-8 w-8 rounded-full" />
           <div className="flex-1 space-y-2">
             <LoadingSkeleton className="h-4 w-24" />
-            <LoadingSkeleton className="h-16 w-3/4 rounded-[20px]" />
+            <LoadingSkeleton className="h-16 w-3/4 rounded-lg" />
           </div>
         </div>
       ))}

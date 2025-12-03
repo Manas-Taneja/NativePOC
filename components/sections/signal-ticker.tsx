@@ -71,8 +71,8 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
       detail: "text-[var(--color-fg-secondary)]",
     },
     neutral: {
-      dot: "bg-[var(--color-accent)]",
-      title: "text-[var(--color-accent)]",
+      dot: "bg-[var(--color-accent-secondary)]",
+      title: "text-[var(--color-accent-secondary)]",
       detail: "text-[var(--color-fg-secondary)]",
     },
   }
@@ -82,8 +82,8 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
       <button
         type="button"
         className={cn(
-          "relative h-10 w-10 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-fg-primary)] flex items-center justify-center transition-colors",
-          open && "border-[var(--color-accent)] text-[var(--color-accent)]",
+          "relative h-10 w-10 rounded-full border-2 border-[var(--color-accent-secondary)]/30 bg-gradient-to-br from-[var(--color-accent-secondary)]/10 to-[var(--color-accent)]/10 text-[var(--color-accent-secondary)] flex items-center justify-center transition-all hover:scale-105 hover:border-[var(--color-accent-secondary)]/60",
+          open && "border-[var(--color-accent-secondary)] bg-[var(--color-accent-secondary)]/20 text-[var(--color-accent-secondary)]",
         )}
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="true"
@@ -112,7 +112,7 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[var(--color-accent)] text-white text-xs font-semibold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[var(--color-accent-secondary)] text-white text-xs font-semibold flex items-center justify-center">
             {unreadCount}
           </span>
         )}
@@ -132,7 +132,7 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
               </p>
             </div>
             <button 
-              className="text-xs text-[var(--color-accent)]" 
+              className="text-xs text-[var(--color-accent-secondary)]" 
               onClick={() => setOpen(false)}
               aria-label="Close notifications"
             >

@@ -10,7 +10,7 @@ type InsightCardProps = {
 }
 
 const toneStyles: Record<Insight["type"], { badge: string; confidence: string }> = {
-  decision: { badge: "bg-[var(--color-accent)]/20 border-[var(--color-accent)]/40 text-[var(--color-accent)]", confidence: "text-[var(--color-fg-secondary)]" },
+  decision: { badge: "bg-[var(--color-accent-secondary)]/20 border-[var(--color-accent-secondary)]/40 text-[var(--color-accent-secondary)]", confidence: "text-[var(--color-fg-secondary)]" },
   risk: { badge: "bg-[var(--color-error)]/15 border-[var(--color-error)]/40 text-[var(--color-error)]", confidence: "text-[var(--color-error)]/80" },
   blocker: { badge: "bg-[var(--color-error)]/15 border-[var(--color-error)]/40 text-[var(--color-error)]", confidence: "text-[var(--color-error)]/80" },
   trend: { badge: "bg-[var(--color-success)]/15 border-[var(--color-success)]/40 text-[var(--color-success)]", confidence: "text-[var(--color-success)]/80" },
@@ -27,25 +27,25 @@ export default function InlineInsightCard({ insight }: InsightCardProps) {
     : insight.summary
 
   return (
-    <div className="relative rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 backdrop-blur-xl p-4 shadow-sm">
+    <div className="relative rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 backdrop-blur-xl p-3 shadow-sm">
       {/* Header - Always visible */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0", styles.badge)}>
+            <span className={cn("inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold border shrink-0 font-ui", styles.badge)}>
               {insight.type.toUpperCase()}
             </span>
-            <span className="text-[10px] font-semibold text-[var(--color-fg-secondary)] shrink-0">
+            <span className="text-[10px] font-semibold text-[var(--color-fg-secondary)] shrink-0 font-ui">
               {insight.impact.toUpperCase()}
             </span>
           </div>
-          <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] leading-snug">
+          <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] leading-snug font-heading tracking-wide">
             {insight.title}
           </h3>
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="shrink-0 h-6 w-6 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-elevated)] transition-colors"
+                        className="shrink-0 h-6 w-6 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-elevated)] transition-colors"
           aria-label={isExpanded ? "Collapse" : "Expand"}
         >
           <motion.svg
@@ -70,7 +70,7 @@ export default function InlineInsightCard({ insight }: InsightCardProps) {
       </div>
 
       {/* Summary - Always visible, truncated when collapsed */}
-      <p className="text-xs text-[var(--color-fg-secondary)] leading-relaxed mb-2">
+      <p className="text-xs text-[var(--color-fg-secondary)] leading-relaxed mb-2 font-ui">
         {isExpanded ? insight.summary : truncatedSummary}
       </p>
 
@@ -108,7 +108,7 @@ export default function InlineInsightCard({ insight }: InsightCardProps) {
                       <a
                         key={source.url}
                         href={source.url}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-bg-subtle)] text-[var(--color-fg-primary)] border border-[var(--color-border-subtle)] hover:border-[var(--color-accent)]/40 transition-colors"
+                        className="text-[10px] px-2 py-0.5 rounded-lg bg-[var(--color-bg-subtle)] text-[var(--color-fg-primary)] border border-[var(--color-accent-secondary)]/30 hover:border-[var(--color-accent-secondary)]/50 transition-colors font-ui"
                       >
                         {source.label}
                       </a>
@@ -126,10 +126,10 @@ export default function InlineInsightCard({ insight }: InsightCardProps) {
                       <button
                         key={action.id}
                         className={cn(
-                          "text-[10px] px-2 py-0.5 rounded-full border font-medium transition-colors",
+                          "text-[10px] px-2 py-0.5 rounded-lg border font-medium transition-colors font-ui",
                           action.intent === "primary"
                             ? "bg-[var(--color-accent)] text-white border-transparent"
-                            : "bg-transparent border-[var(--color-border-subtle)] text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)]",
+                            : "bg-transparent border-[var(--color-accent-secondary)]/30 text-[var(--color-accent-secondary)] hover:bg-[var(--color-accent-secondary)]/10",
                         )}
                       >
                         {action.label}

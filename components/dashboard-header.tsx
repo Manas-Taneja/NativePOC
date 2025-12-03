@@ -110,7 +110,7 @@ export function DashboardHeader({ className, insights = [], metrics = [], onMobi
             </button>
           )}
           <div className="flex items-center space-x-2">
-            <h1 className="text-lg font-semibold text-[var(--color-fg-primary)]">
+            <h1 className="text-lg font-semibold text-[var(--color-fg-primary)] font-heading tracking-wide">
               Native
             </h1>
           </div>
@@ -147,7 +147,7 @@ export function DashboardHeader({ className, insights = [], metrics = [], onMobi
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-sm">
+            <span className="text-sm font-ui">
               Search
             </span>
             <kbd className="ml-2 px-1.5 py-0.5 text-xs bg-[var(--color-bg-subtle)] rounded border border-[var(--color-border-subtle)]">
@@ -158,7 +158,7 @@ export function DashboardHeader({ className, insights = [], metrics = [], onMobi
           {/* Quick Actions */}
           <div className="relative" ref={quickRef}>
             <Button variant="ghost" size="small" onClick={() => setQuickOpen((prev) => !prev)} aria-expanded={quickOpen}>
-              Quick Actions
+              <span className="font-ui">Quick Actions</span>
               <svg
                 width="14"
                 height="14"
@@ -184,27 +184,36 @@ export function DashboardHeader({ className, insights = [], metrics = [], onMobi
                 aria-label="Quick actions"
               >
                 <ul className="divide-y divide-[var(--color-border-subtle)]" role="menu">
-                  {quickActions.map((action) => (
-                    <li key={action.id} role="menuitem">
-                      <button 
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-subtle)] transition-colors focus:outline-none focus:bg-[var(--color-bg-subtle)]"
-                        role="menuitem"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="text-[var(--color-fg-secondary)]"
-                          aria-hidden="true"
+                  {quickActions.map((action, index) => {
+                    const iconColors = [
+                      "text-[var(--color-accent)]",
+                      "text-[var(--color-accent-secondary)]",
+                      "text-[var(--color-accent)]",
+                      "text-[var(--color-accent-secondary)]",
+                    ]
+                    const iconClass = iconColors[index % iconColors.length]
+                    return (
+                      <li key={action.id} role="menuitem">
+                        <button 
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-fg-primary)] hover:bg-[var(--color-accent)]/5 transition-colors focus:outline-none focus:bg-[var(--color-accent)]/5"
+                          role="menuitem"
                         >
-                          <path d={action.icon} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <span>{action.label}</span>
-                      </button>
-                    </li>
-                  ))}
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={iconClass}
+                            aria-hidden="true"
+                          >
+                            <path d={action.icon} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span className="font-ui">{action.label}</span>
+                        </button>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )}
@@ -295,7 +304,7 @@ function ProfileDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="h-10 w-10 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center text-sm font-medium text-[var(--color-fg-primary)] hover:border-[var(--color-border-muted)] transition-colors"
+        className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-secondary)] border-2 border-white/20 flex items-center justify-center text-sm font-medium text-white hover:scale-105 transition-transform shadow-lg"
         aria-label="User menu"
         aria-expanded={isOpen}
       >
@@ -309,10 +318,10 @@ function ProfileDropdown() {
           aria-label="User menu"
         >
           <div className="px-4 py-3 border-b border-[var(--color-border-subtle)]">
-            <p className="text-sm font-medium text-[var(--color-fg-primary)]">
+            <p className="text-sm font-medium text-[var(--color-fg-primary)] font-ui">
               {profile?.full_name || "Account"}
             </p>
-            <p className="text-xs text-[var(--color-fg-tertiary)] mt-0.5">
+            <p className="text-xs text-[var(--color-fg-tertiary)] mt-0.5 font-ui">
               {profile?.email || "Manage your profile"}
             </p>
           </div>
@@ -339,7 +348,7 @@ function ProfileDropdown() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span>Sign Out</span>
+                <span className="font-ui">Sign Out</span>
               </button>
             </li>
           </ul>

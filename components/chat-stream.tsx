@@ -127,8 +127,8 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
                         <span className="text-white font-bold text-xs">N</span>
                       </div>
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-[var(--color-bg-subtle)] border border-[var(--color-border-muted)] flex items-center justify-center">
-                        <span className="text-[var(--color-fg-secondary)] font-medium text-xs">
+                      <div className="h-8 w-8 rounded-full bg-[var(--color-avatar-bg)] flex items-center justify-center">
+                        <span className="text-[var(--color-avatar-text)] font-medium text-xs">
                           {displayName.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -143,10 +143,10 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
 
                   <div
                     className={cn(
-                      "rounded-[20px] px-4 py-3 relative",
+                      "rounded-lg px-4 py-3 relative",
                       isSelf
-                        ? "bg-[var(--color-accent)] text-white"
-                        : "bg-[var(--color-bg-elevated)] text-[var(--color-fg-primary)] border border-[var(--color-border-subtle)]"
+                        ? "bg-[var(--color-chat-user-bg)] text-[var(--color-chat-user-text)]"
+                        : "bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]"
                     )}
                   >
                     <motion.p
@@ -212,10 +212,10 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
               </div>
 
               <div className="flex flex-col gap-1 max-w-[70%]">
-                <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1">
+                <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1 font-ui">
                   Native
                 </span>
-                <div className="rounded-[20px] px-4 py-3 bg-[var(--color-bg-elevated)] text-[var(--color-fg-primary)] border border-[var(--color-border-subtle)]">
+                <div className="rounded-lg px-4 py-3 bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]">
                   <div className="native-loader" aria-label="Native is thinking">
                     <span />
                     <span />
@@ -234,14 +234,14 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
       >
         <div className="flex items-center gap-3">
           <input
-            className="flex-1 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-2 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40"
+            className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-2 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 font-ui"
             placeholder='Say something… start with "Native" for an AI assist'
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
           />
           <button
             type="submit"
-            className="h-10 px-5 rounded-full bg-[var(--color-accent)] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="h-10 px-5 rounded-lg bg-[var(--color-accent)] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-ui"
             disabled={!inputValue.trim() || isNativeResponding}
           >
             {isNativeResponding ? "Thinking…" : "Send"}
