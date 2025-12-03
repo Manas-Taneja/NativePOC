@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
 
 interface ThreadTaskRequest {
   channel: string
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
       .single()
 
     if (insertError) {
-      console.error("Error creating task:", insertError)
+      logger.error("Error creating task:", insertError)
       return NextResponse.json(
         { error: { code: "CREATE_ERROR", message: "Failed to create task" } },
         { status: 500 }
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ task }, { status: 201 })
   } catch (error) {
-    console.error("Task creation error:", error)
+    logger.error("Task creation error:", error)
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to create task", details: {} } },
       { status: 500 },

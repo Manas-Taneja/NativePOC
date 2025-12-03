@@ -24,17 +24,22 @@ import {
 import { useChat } from "@/hooks/useChat"
 import { InviteMemberModal } from "@/components/invite-member-modal"
 import { NewDMModal } from "@/components/new-dm-modal"
+import { useUser } from "@/contexts/user-context"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { logger } from "@/lib/logger"
+import { ErrorMessage } from "@/components/error-message"
 
 export default function Home() {
   const router = useRouter()
   const supabase = createClient()
+  const { userId: currentUserId } = useUser()
   const [organizationId, setOrganizationId] = React.useState<string | null>(null)
   const [isNativeResponding, setIsNativeResponding] = React.useState(false)
   const [isRightColumnVisible, setIsRightColumnVisible] = React.useState(true)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(true)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false)
   const [showInviteModal, setShowInviteModal] = React.useState(false)
   const [showNewDMModal, setShowNewDMModal] = React.useState(false)
-  const [currentUserId, setCurrentUserId] = React.useState<string | null>(null)
 
   // Fetch organization ID and set current user
   React.useEffect(() => {
@@ -49,10 +54,6 @@ export default function Home() {
         return
       }
 
-      // Store current user ID globally for message alignment
-      ; (window as any).__currentUserId = user.id
-      setCurrentUserId(user.id)
-
       const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", user.id).single()
 
       if (profile?.organization_id) {
@@ -63,7 +64,7 @@ export default function Home() {
     void fetchOrgId()
   }, [router])
 
-  const { channels, members, messages, currentChannel, selectChannel, sendMessage } = useChat({
+  const { channels, members, messages, currentChannel, selectChannel, sendMessage, error: chatError, loading: chatLoading } = useChat({
     organizationId: organizationId || undefined,
   })
 
@@ -106,7 +107,7 @@ export default function Home() {
           const assistantMessage = data.message ?? generateNativeResponse(content)
           await sendMessage(assistantMessage, { isAI: true })
         } catch (error) {
-          console.error("Falling back to local AI:", error)
+          logger.error("Falling back to local AI:", error)
           const fallback = generateNativeResponse(content)
           await sendMessage(fallback, { isAI: true })
         } finally {
@@ -121,19 +122,23 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] relative">
       {organizationId ? (
-        <ChannelSidebar
-          channels={channels}
-          currentChannel={currentChannel}
-          members={members}
-          organizationName="NativeIQ"
-          onSelectChannel={(channel) => {
-            void selectChannel(channel)
-          }}
-          onInvite={() => setShowInviteModal(true)}
-          onNewDM={() => setShowNewDMModal(true)}
-          collapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
-        />
+        <ErrorBoundary>
+          <ChannelSidebar
+            channels={channels}
+            currentChannel={currentChannel}
+            members={members}
+            organizationName="NativeIQ"
+            onSelectChannel={(channel) => {
+              void selectChannel(channel)
+            }}
+            onInvite={() => setShowInviteModal(true)}
+            onNewDM={() => setShowNewDMModal(true)}
+            collapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+            isMobileOpen={isMobileSidebarOpen}
+            onMobileClose={() => setIsMobileSidebarOpen(false)}
+          />
+        </ErrorBoundary>
       ) : (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[var(--color-fg-tertiary)]">
           <div className="flex items-center gap-3">
@@ -143,8 +148,17 @@ export default function Home() {
         </div>
       )}
       <div className="relative z-10">
-        <DashboardHeader insights={mockInsights} metrics={mockSlaMetrics} />
+        <DashboardHeader 
+          insights={mockInsights} 
+          metrics={mockSlaMetrics}
+          onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
+        />
         <main className="max-w-[1800px] mx-auto px-5 md:px-8 py-4 space-y-6">
+          {chatError && (
+            <ErrorMessage 
+              error={chatError}
+            />
+          )}
 
           <motion.div
             initial="initial"
@@ -239,7 +253,9 @@ export default function Home() {
                       </div>
                     </div>
                   ) : (
-                    <ChatStream messages={messages} onSendMessage={handleSendMessage} isNativeResponding={isNativeResponding} />
+                    <ErrorBoundary>
+                      <ChatStream messages={messages} onSendMessage={handleSendMessage} isNativeResponding={isNativeResponding} />
+                    </ErrorBoundary>
                   )}
                 </div>
               </Card>
@@ -283,7 +299,9 @@ export default function Home() {
               </AnimatePresence>
             </motion.div>
           </motion.div>
-          <BusinessInsights company="Native" insights={mockInsights} metrics={mockSlaMetrics} />
+          <ErrorBoundary>
+            <BusinessInsights company="Native" insights={mockInsights} metrics={mockSlaMetrics} />
+          </ErrorBoundary>
         </main>
       </div>
 

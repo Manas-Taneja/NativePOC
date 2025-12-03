@@ -88,6 +88,7 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="true"
         aria-expanded={open}
+        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
       >
         <svg
           width="18"
@@ -96,6 +97,7 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="text-current"
+          aria-hidden="true"
         >
           <path
             d="M10 2C6.68629 2 4 4.68629 4 8V11.382L3.10557 12.2764C2.21086 13.1711 2.83758 14.6667 4.10557 14.6667H15.8944C17.1624 14.6667 17.7891 13.1711 16.8944 12.2764L16 11.382V8C16 4.68629 13.3137 2 10 2Z"
@@ -129,7 +131,11 @@ export function SignalTicker({ insights, metrics }: SignalTickerProps) {
                 {unreadCount > 0 ? `${unreadCount} insights and alerts` : "All clear for now"}
               </p>
             </div>
-            <button className="text-xs text-[var(--color-accent)]" onClick={() => setOpen(false)}>
+            <button 
+              className="text-xs text-[var(--color-accent)]" 
+              onClick={() => setOpen(false)}
+              aria-label="Close notifications"
+            >
               Close
             </button>
           </div>

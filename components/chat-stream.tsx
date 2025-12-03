@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn, formatRelativeTime } from "@/lib/utils"
 import { Message } from "@/lib/mock-data"
 import { chatMessageFadeIn, fadeOutOnly } from "@/lib/animations"
+import { useUser } from "@/contexts/user-context"
 
 interface ChatStreamProps {
   messages: Message[]
@@ -17,6 +18,7 @@ interface ChatStreamProps {
  * ChatStream - iOS Messages-style chat interface with streaming
  */
 export function ChatStream({ messages, className, onSendMessage, isNativeResponding }: ChatStreamProps) {
+  const { userId: currentUserId } = useUser()
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [collapsedMessages, setCollapsedMessages] = React.useState<Set<string>>(new Set())
   const [inputValue, setInputValue] = React.useState("")
@@ -89,7 +91,7 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
             const isCollapsed = collapsedMessages.has(message.id)
             const isAssistant = message.role === "assistant"
             // Check if this message is from the current user by comparing author_id
-            const isSelf = message.author_id === (window as any).__currentUserId
+            const isSelf = message.author_id === currentUserId
             const shouldShowCollapse = isAssistant && message.content.length > 200
             const content = isCollapsed && shouldShowCollapse
               ? message.content.slice(0, 150) + "..."
@@ -166,6 +168,7 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
                       <button
                         onClick={() => toggleMessageCollapse(message.id)}
                         className="mt-2 flex items-center justify-center w-full text-[11px] text-[var(--color-fg-tertiary)] hover:text-[var(--color-fg-secondary)] transition-colors"
+                        aria-label={isCollapsed ? "Expand message" : "Collapse message"}
                       >
                         <motion.svg
                           width="12"

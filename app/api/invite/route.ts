@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { logger } from "@/lib/logger"
 
 export async function POST(request: Request) {
     try {
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
 
         if (inviteError) {
             // If invites table doesn't exist, we'll handle it differently
-            console.error("Invite error:", inviteError)
+            logger.error("Invite error:", inviteError)
             return NextResponse.json(
                 {
                     error: "Invites table not set up. User must sign up first, then you can add them.",
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
             message: "Share this link with the user to join your organization",
         })
     } catch (error) {
-        console.error("Invite error:", error)
+        logger.error("Invite error:", error)
         return NextResponse.json(
             { error: "Failed to create invite" },
             { status: 500 }

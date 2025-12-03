@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { logger } from "@/lib/logger"
 
 type ChatRole = "user" | "assistant" | "system"
 
@@ -78,7 +79,7 @@ Model:`
 
     if (!geminiResponse.ok) {
       const errorData = await geminiResponse.json().catch(() => ({}))
-      console.error("Gemini API error:", geminiResponse.status, errorData)
+      logger.error("Gemini API error:", geminiResponse.status, errorData)
       return errorResponse(
         geminiResponse.status,
         "GEMINI_ERROR",
@@ -99,7 +100,7 @@ Model:`
       },
     })
   } catch (error) {
-    console.error("Chat route error:", error)
+    logger.error("Chat route error:", error)
 
     if (error instanceof Error) {
       return errorResponse(500, "GEMINI_ERROR", error.message)

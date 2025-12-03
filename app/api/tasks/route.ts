@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
 
 export async function GET(request: Request) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
     const { data: tasks, error: fetchError } = await query
 
     if (fetchError) {
-      console.error("Error fetching tasks:", fetchError)
+      logger.error("Error fetching tasks:", fetchError)
       return NextResponse.json(
         { error: { code: "FETCH_ERROR", message: "Failed to fetch tasks" } },
         { status: 500 }
@@ -59,7 +60,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ items: tasks || [] })
   } catch (error) {
-    console.error("Tasks route error:", error)
+    logger.error("Tasks route error:", error)
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Internal server error" } },
       { status: 500 }

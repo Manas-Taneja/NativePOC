@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { Card } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
+import { logger } from "@/lib/logger"
 
 function SignupContent() {
     const router = useRouter()
@@ -38,20 +39,20 @@ function SignupContent() {
                     .single()
 
                 if (error || !data) {
-                    console.error("Invalid invite code")
+                    logger.error("Invalid invite code")
                     return
                 }
 
                 // Check if expired
                 if (new Date(data.expires_at) < new Date()) {
-                    console.error("Invite expired")
+                    logger.error("Invite expired")
                     return
                 }
 
                 setInviteData(data)
                 setEmail(data.email)
             } catch (err) {
-                console.error("Error checking invite:", err)
+                logger.error("Error checking invite:", err)
             } finally {
                 setLoadingInvite(false)
             }
@@ -80,7 +81,7 @@ function SignupContent() {
                 })
 
                 if (signUpError) {
-                    console.error("Auth signup error:", signUpError)
+                    logger.error("Auth signup error:", signUpError)
                     setInviteError(signUpError.message)
                     return
                 }
@@ -100,7 +101,7 @@ function SignupContent() {
                     })
 
                 if (profileError) {
-                    console.error("Profile update error:", profileError)
+                    logger.error("Profile update error:", profileError)
                     setInviteError("Failed to update profile: " + profileError.message)
                     return
                 }
@@ -112,13 +113,13 @@ function SignupContent() {
                     .eq("invite_code", inviteCode)
 
                 if (inviteUpdateError) {
-                    console.error("Invite update error:", inviteUpdateError)
+                    logger.error("Invite update error:", inviteUpdateError)
                     // Don't fail if this doesn't work
                 }
 
                 router.push("/")
             } catch (err) {
-                console.error("Signup with invite failed:", err)
+                logger.error("Signup with invite failed:", err)
                 setInviteError(err instanceof Error ? err.message : "Signup failed")
             }
         } else {

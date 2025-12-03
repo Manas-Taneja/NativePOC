@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
 
 interface PolicyRequest {
   actor: string
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error("Policy check error:", error)
+    logger.error("Policy check error:", error)
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to evaluate policy", details: {} } },
       { status: 500 },

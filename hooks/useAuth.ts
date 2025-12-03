@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { logger } from "@/lib/logger"
 
 export interface Profile {
     id: string
@@ -80,7 +81,7 @@ export function useAuth() {
             })
 
             if (channelError) {
-                console.error("Failed to create AI channel:", channelError)
+                logger.error("Failed to create AI channel:", channelError)
                 // Don't throw - channel creation is not critical for signup
             }
 
@@ -147,7 +148,7 @@ export function useAuth() {
             .single()
 
         if (profileError) {
-            console.error("Error fetching profile:", profileError)
+            logger.error("Error fetching profile:", profileError)
             return null
         }
 
@@ -162,7 +163,7 @@ export function useAuth() {
             .single()
 
         if (orgError) {
-            console.error("Error fetching organization:", orgError)
+            logger.error("Error fetching organization:", orgError)
             return null
         }
 

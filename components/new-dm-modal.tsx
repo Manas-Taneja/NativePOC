@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useFocusTrap } from "@/hooks/useFocusTrap"
 
 interface NewDMModalProps {
     isOpen: boolean
@@ -21,6 +22,7 @@ export function NewDMModal({ isOpen, onClose, organizationId, currentUserId, onD
     const [members, setMembers] = React.useState<TeamMember[]>([])
     const [loading, setLoading] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
+    const modalRef = useFocusTrap(isOpen)
 
     React.useEffect(() => {
         if (!isOpen) return
@@ -114,19 +116,41 @@ export function NewDMModal({ isOpen, onClose, organizationId, currentUserId, onD
         }
     }
 
+    // Handle Escape key
+    React.useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose()
+            }
+        }
+
+        document.addEventListener("keydown", handleEscape)
+        return () => document.removeEventListener("keydown", handleEscape)
+    }, [isOpen, onClose])
+
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]" onClick={onClose}>
+        <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]" 
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dm-modal-title"
+        >
             <div
+                ref={modalRef as React.RefObject<HTMLDivElement>}
                 className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] shadow-2xl w-full max-w-md p-6"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-[var(--color-fg-primary)]">New Direct Message</h2>
+                    <h2 id="dm-modal-title" className="text-lg font-semibold text-[var(--color-fg-primary)]">New Direct Message</h2>
                     <button
                         onClick={onClose}
                         className="h-8 w-8 rounded-full hover:bg-[var(--color-bg-subtle)] flex items-center justify-center text-[var(--color-fg-secondary)]"
+                        aria-label="Close modal"
                     >
                         ×
                     </button>

@@ -7,11 +7,14 @@ import { ThemeToggle } from "./theme-toggle"
 import { SignalTicker } from "@/components/sections/signal-ticker"
 import type { Insight, SlaMetric } from "@native/types"
 import { cn } from "@/lib/utils"
+import { useUser } from "@/contexts/user-context"
+import { createClient } from "@/lib/supabase/client"
 
 export interface DashboardHeaderProps {
   className?: string
   insights?: Insight[]
   metrics?: SlaMetric[]
+  onMobileMenuClick?: () => void
 }
 
 /**
@@ -25,7 +28,7 @@ const quickActions = [
   { id: "refresh", label: "Refresh Data", icon: "M13.5 8C13.5 10.7614 11.2614 13 8.5 13C5.73858 13 3.5 10.7614 3.5 8C3.5 5.23858 5.73858 3 8.5 3 M13.5 3V8H8.5" },
 ]
 
-export function DashboardHeader({ className, insights = [], metrics = [] }: DashboardHeaderProps) {
+export function DashboardHeader({ className, insights = [], metrics = [], onMobileMenuClick }: DashboardHeaderProps) {
   const [quickOpen, setQuickOpen] = React.useState(false)
   const quickRef = React.useRef<HTMLDivElement>(null)
 
@@ -35,12 +38,22 @@ export function DashboardHeader({ className, insights = [], metrics = [] }: Dash
         setQuickOpen(false)
       }
     }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && quickOpen) {
+        setQuickOpen(false)
+      }
+    }
     if (quickOpen) {
       document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("keydown", handleEscape)
     } else {
       document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEscape)
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEscape)
+    }
   }, [quickOpen])
   const { scrollY } = useScroll()
 
@@ -72,6 +85,30 @@ export function DashboardHeader({ className, insights = [], metrics = [] }: Dash
       <div className="relative flex h-16 items-center justify-between px-5 md:px-8">
         {/* Logo / Brand */}
         <div className="flex items-center space-x-3">
+          {/* Mobile Menu Button */}
+          {onMobileMenuClick && (
+            <button
+              onClick={onMobileMenuClick}
+              className="lg:hidden h-10 w-10 rounded-full bg-[var(--color-bg-subtle)] hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center text-[var(--color-fg-primary)] mr-2"
+              aria-label="Open menu"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 5H17M3 10H17M3 15H17"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
           <div className="flex items-center space-x-2">
             <h1 className="text-lg font-semibold text-[var(--color-fg-primary)]">
               Native
@@ -141,11 +178,18 @@ export function DashboardHeader({ className, insights = [], metrics = [] }: Dash
               </svg>
             </Button>
             {quickOpen && (
-              <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] shadow-2xl overflow-hidden z-50">
-                <ul className="divide-y divide-[var(--color-border-subtle)]">
+              <div 
+                className="absolute right-0 mt-2 w-60 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] shadow-2xl overflow-hidden z-50"
+                role="menu"
+                aria-label="Quick actions"
+              >
+                <ul className="divide-y divide-[var(--color-border-subtle)]" role="menu">
                   {quickActions.map((action) => (
-                    <li key={action.id}>
-                      <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-subtle)] transition-colors">
+                    <li key={action.id} role="menuitem">
+                      <button 
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-subtle)] transition-colors focus:outline-none focus:bg-[var(--color-bg-subtle)]"
+                        role="menuitem"
+                      >
                         <svg
                           width="16"
                           height="16"
@@ -153,6 +197,7 @@ export function DashboardHeader({ className, insights = [], metrics = [] }: Dash
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                           className="text-[var(--color-fg-secondary)]"
+                          aria-hidden="true"
                         >
                           <path d={action.icon} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -180,8 +225,43 @@ export function DashboardHeader({ className, insights = [], metrics = [] }: Dash
 }
 
 function ProfileDropdown() {
+  const { user } = useUser()
+  const [profile, setProfile] = React.useState<{ full_name: string | null; email: string | null } | null>(null)
   const [isOpen, setIsOpen] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    async function fetchProfile() {
+      if (!user) return
+      const supabase = createClient()
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single()
+      
+      setProfile({
+        full_name: data?.full_name || null,
+        email: user.email || null,
+      })
+    }
+    void fetchProfile()
+  }, [user])
+
+  const getInitials = (name: string | null | undefined, email: string | null | undefined): string => {
+    if (name) {
+      return name
+        .split(" ")
+        .map((segment) => segment[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    }
+    if (email) {
+      return email[0].toUpperCase()
+    }
+    return "U"
+  }
 
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -189,10 +269,19 @@ function ProfileDropdown() {
         setIsOpen(false)
       }
     }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && isOpen) {
+        setIsOpen(false)
+      }
+    }
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("keydown", handleEscape)
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEscape)
+    }
   }, [isOpen])
 
   const handleSignOut = async () => {
@@ -207,21 +296,32 @@ function ProfileDropdown() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="h-10 w-10 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center text-sm font-medium text-[var(--color-fg-primary)] hover:border-[var(--color-border-muted)] transition-colors"
+        aria-label="User menu"
+        aria-expanded={isOpen}
       >
-        JD
+        {getInitials(profile?.full_name, profile?.email)}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] shadow-2xl overflow-hidden z-50">
+        <div 
+          className="absolute right-0 mt-2 w-48 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] shadow-2xl overflow-hidden z-50"
+          role="menu"
+          aria-label="User menu"
+        >
           <div className="px-4 py-3 border-b border-[var(--color-border-subtle)]">
-            <p className="text-sm font-medium text-[var(--color-fg-primary)]">Account</p>
-            <p className="text-xs text-[var(--color-fg-tertiary)] mt-0.5">Manage your profile</p>
+            <p className="text-sm font-medium text-[var(--color-fg-primary)]">
+              {profile?.full_name || "Account"}
+            </p>
+            <p className="text-xs text-[var(--color-fg-tertiary)] mt-0.5">
+              {profile?.email || "Manage your profile"}
+            </p>
           </div>
-          <ul>
-            <li>
+          <ul role="menu">
+            <li role="menuitem">
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-subtle)] transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-subtle)] transition-colors focus:outline-none focus:bg-[var(--color-bg-subtle)]"
+                role="menuitem"
               >
                 <svg
                   width="16"

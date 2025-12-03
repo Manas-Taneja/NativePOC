@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { RealtimeChannel } from "@supabase/supabase-js"
+import { logger } from "@/lib/logger"
 
 export interface Channel {
   id: string
@@ -81,7 +82,7 @@ export function useChat(options: UseChatOptions = {}) {
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to fetch channels"
       setError(message)
-      console.error("Error fetching channels:", e)
+      logger.error("Error fetching channels:", e)
       return []
     } finally {
       setLoading(false)
@@ -122,7 +123,7 @@ export function useChat(options: UseChatOptions = {}) {
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to fetch messages"
       setError(message)
-      console.error("Error fetching messages:", e)
+      logger.error("Error fetching messages:", e)
       return []
     } finally {
       setLoading(false)
@@ -142,7 +143,7 @@ export function useChat(options: UseChatOptions = {}) {
       setMembers(data || [])
       return data
     } catch (e) {
-      console.error("Failed to fetch members:", e)
+      logger.error("Failed to fetch members:", e)
       return []
     }
   }, [supabase])
@@ -151,7 +152,7 @@ export function useChat(options: UseChatOptions = {}) {
   const sendMessage = useCallback(async (content: string, options?: { isAI?: boolean }) => {
     if (!currentChannel || !content.trim()) return
 
-    console.log("📤 Sending message:", { content, channel: currentChannel.name, isAI: options?.isAI })
+    logger.debug("Sending message:", { content, channel: currentChannel.name, isAI: options?.isAI })
     setSending(true)
     setError(null)
 
@@ -178,14 +179,13 @@ export function useChat(options: UseChatOptions = {}) {
 
       if (sendError) throw sendError
 
-      console.log("✅ Message sent successfully:", data)
+      logger.debug("Message sent successfully:", data)
       // Message will be added via realtime subscription
       return data
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to send message"
       setError(message)
-      console.error("❌ Error sending message:", e)
-      console.error("Error sending message:", e)
+      logger.error("Error sending message:", e)
       throw e
     } finally {
       setSending(false)
@@ -194,7 +194,7 @@ export function useChat(options: UseChatOptions = {}) {
 
   // Subscribe to real-time messages
   const subscribeToChannel = useCallback((channelId: string) => {
-    console.log("🔔 Subscribing to channel:", channelId)
+    logger.debug("Subscribing to channel:", channelId)
     // Unsubscribe from previous channel
     if (realtimeSubscription.current) {
       supabase.removeChannel(realtimeSubscription.current)
@@ -213,7 +213,7 @@ export function useChat(options: UseChatOptions = {}) {
           filter: `channel_id=eq.${channelId}`,
         },
         async (payload) => {
-          console.log("📨 Received new message via realtime:", payload.new)
+          logger.debug("Received new message via realtime:", payload.new)
           const newMessage = payload.new as Message
 
           // Fetch author details if needed
@@ -236,11 +236,11 @@ export function useChat(options: UseChatOptions = {}) {
             timestamp: new Date(newMessage.created_at),
           }
 
-          console.log("✅ Adding message to state:", transformedMessage)
+          logger.debug("Adding message to state:", transformedMessage)
           // Add to messages if not already present
           setMessages((prev) => {
             if (prev.find((m) => m.id === newMessage.id)) {
-              console.log("⚠️ Message already exists, skipping")
+              logger.debug("Message already exists, skipping")
               return prev
             }
             return [...prev, transformedMessage]

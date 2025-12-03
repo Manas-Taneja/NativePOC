@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useFocusTrap } from "@/hooks/useFocusTrap"
+import { cn } from "@/lib/utils"
 
 interface InviteMemberModalProps {
     isOpen: boolean
@@ -14,13 +16,35 @@ export function InviteMemberModal({ isOpen, onClose, organizationId }: InviteMem
     const [loading, setLoading] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
     const [success, setSuccess] = React.useState(false)
+    const [validationError, setValidationError] = React.useState<string | null>(null)
 
     const [inviteLink, setInviteLink] = React.useState<string | null>(null)
+    const modalRef = useFocusTrap(isOpen)
+
+    const validateEmail = (emailValue: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailValue.trim()) {
+            setValidationError("Email is required")
+            return false
+        }
+        if (!emailRegex.test(emailValue)) {
+            setValidationError("Please enter a valid email address")
+            return false
+        }
+        setValidationError(null)
+        return true
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        if (!validateEmail(email)) {
+            return
+        }
+        
         setLoading(true)
         setError(null)
+        setValidationError(null)
         setInviteLink(null)
 
         try {
@@ -58,19 +82,41 @@ export function InviteMemberModal({ isOpen, onClose, organizationId }: InviteMem
         }
     }
 
+    // Handle Escape key
+    React.useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose()
+            }
+        }
+
+        document.addEventListener("keydown", handleEscape)
+        return () => document.removeEventListener("keydown", handleEscape)
+    }, [isOpen, onClose])
+
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]" onClick={onClose}>
+        <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]" 
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="invite-modal-title"
+        >
             <div
+                ref={modalRef as React.RefObject<HTMLDivElement>}
                 className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] shadow-2xl w-full max-w-md p-6"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-[var(--color-fg-primary)]">Invite Team Member</h2>
+                    <h2 id="invite-modal-title" className="text-lg font-semibold text-[var(--color-fg-primary)]">Invite Team Member</h2>
                     <button
                         onClick={onClose}
                         className="h-8 w-8 rounded-full hover:bg-[var(--color-bg-subtle)] flex items-center justify-center text-[var(--color-fg-secondary)]"
+                        aria-label="Close modal"
                     >
                         ×
                     </button>
@@ -122,11 +168,29 @@ export function InviteMemberModal({ isOpen, onClose, organizationId }: InviteMem
                             <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => {
+                                    setEmail(e.target.value)
+                                    if (validationError) {
+                                        validateEmail(e.target.value)
+                                    }
+                                }}
+                                onBlur={() => validateEmail(email)}
                                 placeholder="colleague@example.com"
                                 required
-                                className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] text-[var(--color-fg-primary)] placeholder:text-[var(--color-fg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
+                                className={cn(
+                                    "w-full px-4 py-2.5 rounded-lg border bg-[var(--color-bg-base)] text-[var(--color-fg-primary)] placeholder:text-[var(--color-fg-tertiary)] focus:outline-none focus:ring-2 focus:border-transparent transition-colors",
+                                    validationError
+                                        ? "border-[var(--color-error)] focus:ring-[var(--color-error)]/40"
+                                        : "border-[var(--color-border-subtle)] focus:ring-[var(--color-accent)]/40"
+                                )}
+                                aria-invalid={validationError ? "true" : "false"}
+                                aria-describedby={validationError ? "email-error" : undefined}
                             />
+                            {validationError && (
+                                <p id="email-error" className="mt-1 text-xs text-[var(--color-error)]">
+                                    {validationError}
+                                </p>
+                            )}
                         </div>
 
                         {error && (

@@ -3,6 +3,8 @@ import { Barlow } from "next/font/google";
 import "./globals.css";
 import "@native/ui/styles";
 import { ThemeProvider } from "@/components/theme-provider";
+import { UserProvider } from "@/contexts/user-context";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const barlow = Barlow({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -23,9 +25,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${barlow.className} ${barlow.variable} antialiased`}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <UserProvider>
+              {children}
+            </UserProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
