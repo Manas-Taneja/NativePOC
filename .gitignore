@@ -47,3 +47,6 @@ next-env.d.ts
 
 # Documentation (if not needed in repo)
 /docs
+
+# Codebase Index
+CODEBASE_INDEX.md

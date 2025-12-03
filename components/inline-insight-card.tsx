@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import type { Insight } from "@native/types"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 type InsightCardProps = {
@@ -18,69 +18,130 @@ const toneStyles: Record<Insight["type"], { badge: string; confidence: string }>
 }
 
 export default function InlineInsightCard({ insight }: InsightCardProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false)
   const styles = toneStyles[insight.type]
 
+  // Truncate summary for collapsed view (first 100 chars)
+  const truncatedSummary = insight.summary.length > 100 
+    ? insight.summary.slice(0, 100) + "..."
+    : insight.summary
+
   return (
-    <div className="relative rounded-3xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 backdrop-blur-xl p-5 shadow-[0_20px_40px_rgba(0,0,0,0.25)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <span className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border", styles.badge)}>
-            {insight.type.toUpperCase()}
-          </span>
-          <span className="text-xs font-semibold text-[var(--color-fg-secondary)]">
-            Impact: <span className="text-[var(--color-fg-primary)]">{insight.impact.toUpperCase()}</span>
-          </span>
+    <div className="relative rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 backdrop-blur-xl p-4 shadow-sm">
+      {/* Header - Always visible */}
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0", styles.badge)}>
+              {insight.type.toUpperCase()}
+            </span>
+            <span className="text-[10px] font-semibold text-[var(--color-fg-secondary)] shrink-0">
+              {insight.impact.toUpperCase()}
+            </span>
+          </div>
+          <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] leading-snug">
+            {insight.title}
+          </h3>
         </div>
-        <span className={cn("text-xs font-medium", styles.confidence)}>
-          {Math.round(insight.confidence * 100)}% confidence
-        </span>
-      </div>
-
-      <motion.h3
-        className="text-lg font-semibold text-[var(--color-fg-primary)] leading-snug mb-3"
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-      >
-        {insight.title}
-      </motion.h3>
-
-      <p className="text-sm text-[var(--color-fg-secondary)] leading-relaxed mb-4">{insight.summary}</p>
-
-      <div className="text-xs text-[var(--color-fg-secondary)]">
-        <span className="font-semibold text-[var(--color-fg-tertiary)]">Owner: </span>
-        <span className="text-[var(--color-fg-primary)]">{insight.owner}</span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {insight.sources.map((source) => (
-          <a
-            key={source.url}
-            href={source.url}
-            className="text-xs px-3 py-1 rounded-full bg-[var(--color-bg-subtle)] text-[var(--color-fg-primary)] border border-[var(--color-border-subtle)] hover:border-[var(--color-accent)]/40 transition-colors"
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="shrink-0 h-6 w-6 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-elevated)] transition-colors"
+          aria-label={isExpanded ? "Collapse" : "Expand"}
+        >
+          <motion.svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {source.label}
-          </a>
-        ))}
+            <path
+              d="M3 4.5L6 7.5L9 4.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-[var(--color-fg-secondary)]"
+            />
+          </motion.svg>
+        </button>
       </div>
 
-      {insight.suggestedActions?.length ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {insight.suggestedActions.map((action) => (
-            <button
-              key={action.id}
-              className={cn(
-                "text-xs px-3 py-1 rounded-full border font-medium transition-colors",
-                action.intent === "primary"
-                  ? "bg-[var(--color-accent)] text-white border-transparent"
-                  : "bg-transparent border-[var(--color-border-subtle)] text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)]",
+      {/* Summary - Always visible, truncated when collapsed */}
+      <p className="text-xs text-[var(--color-fg-secondary)] leading-relaxed mb-2">
+        {isExpanded ? insight.summary : truncatedSummary}
+      </p>
+
+      {/* Expanded content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="pt-2 space-y-3 border-t border-[var(--color-border-subtle)]">
+              {/* Owner */}
+              <div className="text-[10px] text-[var(--color-fg-secondary)]">
+                <span className="font-semibold text-[var(--color-fg-tertiary)]">Owner: </span>
+                <span className="text-[var(--color-fg-primary)]">{insight.owner}</span>
+              </div>
+
+              {/* Confidence */}
+              <div className="text-[10px] text-[var(--color-fg-secondary)]">
+                <span className="font-semibold text-[var(--color-fg-tertiary)]">Confidence: </span>
+                <span className={cn("font-medium", styles.confidence)}>
+                  {Math.round(insight.confidence * 100)}%
+                </span>
+              </div>
+
+              {/* Sources */}
+              {insight.sources.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-[var(--color-fg-tertiary)] mb-1.5">Sources:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {insight.sources.map((source) => (
+                      <a
+                        key={source.url}
+                        href={source.url}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-bg-subtle)] text-[var(--color-fg-primary)] border border-[var(--color-border-subtle)] hover:border-[var(--color-accent)]/40 transition-colors"
+                      >
+                        {source.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               )}
-            >
-              {action.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+
+              {/* Suggested Actions */}
+              {insight.suggestedActions?.length ? (
+                <div>
+                  <p className="text-[10px] font-semibold text-[var(--color-fg-tertiary)] mb-1.5">Actions:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {insight.suggestedActions.map((action) => (
+                      <button
+                        key={action.id}
+                        className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full border font-medium transition-colors",
+                          action.intent === "primary"
+                            ? "bg-[var(--color-accent)] text-white border-transparent"
+                            : "bg-transparent border-[var(--color-border-subtle)] text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)]",
+                        )}
+                      >
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
