@@ -77,7 +77,7 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
       <div className="flex gap-3">
         <Button
           onClick={resetError}
-          variant="default"
+          variant="primary"
           className="bg-[var(--color-accent)] text-white"
         >
           Try again
