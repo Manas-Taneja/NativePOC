@@ -15,6 +15,13 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   
+  /* Brand Colors for Tailwind */
+  --color-brand-olive: #768863;
+  --color-brand-teal: #93b6b4;
+  --color-brand-black: #151715;
+  --color-brand-surface: #1e221e;
+  --color-brand-surface-light: #27272a;
+  
   /* Spacing */
   --spacing-5: 1.25rem;
   --spacing-10: 2.5rem;
@@ -71,6 +78,10 @@
   --color-chat-user-text: #ffffff;
   --color-chat-system-bg: #f3f4f6;
   --color-chat-system-text: #1a1a1a;
+  
+  /* Sidebar Active State - Light Mode */
+  --color-sidebar-active-bg: rgba(118, 136, 99, 0.15);
+  --color-sidebar-active-text: #768863;
   
   /* Avatar Colors */
   --color-avatar-bg: #93b6b4;
@@ -164,6 +175,19 @@
   --color-chat-user-text: #151715;
   --color-chat-system-bg: #27272a;
   --color-chat-system-text: #d1d5db;
+  
+  /* Pulse Card Background - Dark Mode */
+  --color-bg-pulse-card: #27272a;
+  --color-border-pulse-card: rgba(147, 182, 180, 0.2);
+  
+  /* Text Colors for Pulse Cards - Dark Mode */
+  --color-pulse-heading: #f3f4f6;
+  --color-pulse-body: #d1d5db;
+  --color-pulse-risk: #f87171;
+  
+  /* Sidebar Active State - Dark Mode (same as light for consistency) */
+  --color-sidebar-active-bg: rgba(118, 136, 99, 0.15);
+  --color-sidebar-active-text: #768863;
   
   /* Avatar Colors */
   --color-avatar-bg: #93b6b4;
@@ -301,6 +325,13 @@ body {
 
 .minimal-scrollbar:hover::-webkit-scrollbar-thumb {
   opacity: 1;
+}
+
+/* Chat Container - Prevents text bubbles from stretching to infinity */
+.chat-container {
+  max-width: 850px;
+  margin-inline: auto;
+  width: 100%;
 }
 
 .animate-marquee {

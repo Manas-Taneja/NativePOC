@@ -83,10 +83,11 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
     <div className={cn("flex flex-col h-full min-h-0 overflow-hidden", className)}>
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-5 py-6 pb-4 space-y-4 scroll-smooth minimal-scrollbar relative"
+        className="flex-1 overflow-y-auto overflow-x-hidden py-6 pb-4 scroll-smooth minimal-scrollbar relative"
         style={{ scrollBehavior: "smooth", contain: "layout style paint" }}
       >
-        <AnimatePresence mode="popLayout" initial={false}>
+        <div className="px-5 space-y-4">
+          <AnimatePresence mode="popLayout" initial={false}>
           {messages.map((message) => {
             const isCollapsed = collapsedMessages.has(message.id)
             const isAssistant = message.role === "assistant"
@@ -226,13 +227,14 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="px-5 py-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]"
+        className="py-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 px-4">
           <input
             className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-2 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 font-ui"
             placeholder='Say something… start with "Native" for an AI assist'

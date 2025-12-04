@@ -7,13 +7,13 @@ import { UserProvider } from "@/contexts/user-context";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 const barlow = Barlow({
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
   variable: "--font-barlow",
 });
 
 const barlowSemiCondensed = Barlow_Semi_Condensed({
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "600"],
   subsets: ["latin"],
   variable: "--font-barlow-condensed",
 });

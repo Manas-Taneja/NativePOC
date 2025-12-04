@@ -138,12 +138,12 @@ export function ChannelSidebar({
                       className={cn(
                         "w-full px-5 py-2 text-left text-sm transition-colors flex items-center gap-3 font-ui",
                         currentChannel?.id === channel.id
-                          ? "bg-[var(--color-accent-active-bg)] text-[var(--color-accent)] font-medium"
+                          ? "bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-medium"
                           : "text-[var(--color-fg-secondary)] hover:bg-[var(--color-bg-subtle)]"
                       )}
                     >
                       {currentChannel?.id === channel.id && (
-                        <div className="h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+                        <div className="h-2 w-2 rounded-full bg-[var(--color-sidebar-active-text)]" />
                       )}
                       <span>{channel.name}</span>
                     </button>
@@ -172,9 +172,9 @@ export function ChannelSidebar({
                       <button
                         onClick={() => handleChannelSelect(channel)}
                         className={cn(
-                          "w-full px-5 py-2 text-left text-sm transition-colors flex items-center gap-3",
+                          "w-full px-5 py-2 text-left text-sm transition-colors flex items-center gap-3 font-ui",
                           currentChannel?.id === channel.id
-                            ? "bg-[var(--color-accent-active-bg)] text-[var(--color-accent-secondary)] font-medium border-l-2 border-[var(--color-accent-secondary)]"
+                            ? "bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-medium"
                             : "text-[var(--color-fg-secondary)] hover:bg-[var(--color-accent-secondary)]/5"
                         )}
                       >
@@ -229,9 +229,9 @@ export function ChannelSidebar({
                       <button
                         onClick={() => handleChannelSelect(channel)}
                         className={cn(
-                          "w-full px-5 py-2 text-left text-sm transition-colors flex items-center gap-3",
+                          "w-full px-5 py-2 text-left text-sm transition-colors flex items-center gap-3 font-ui",
                           currentChannel?.id === channel.id
-                            ? "bg-[var(--color-accent-active-bg)] text-[var(--color-accent)] font-medium border-l-2 border-[var(--color-accent)]"
+                            ? "bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-medium"
                             : "text-[var(--color-fg-secondary)] hover:bg-[var(--color-accent)]/5"
                         )}
                       >

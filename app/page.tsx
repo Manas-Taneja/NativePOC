@@ -244,7 +244,7 @@ export default function Home() {
                 </div>
 
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-hidden">
                   {!currentChannel ? (
                     <div className="h-full flex items-center justify-center text-[var(--color-fg-tertiary)]">
                       <div className="text-center">

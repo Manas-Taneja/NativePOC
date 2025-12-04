@@ -66,7 +66,10 @@ export function BusinessInsights({ company = "Native", insights, metrics }: Busi
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-fg-tertiary)]">Business Insights</p>
-          <h3 className="text-2xl font-semibold text-[var(--color-fg-primary)] mt-2 font-heading tracking-wide">
+          <h3 className={cn(
+            "text-2xl font-semibold mt-2 font-heading tracking-wide",
+            "text-[var(--color-fg-primary)] dark:text-[var(--color-pulse-heading)]"
+          )}>
             One-screen pulse for {company}
           </h3>
         </div>
@@ -95,11 +98,26 @@ export function BusinessInsights({ company = "Native", insights, metrics }: Busi
           return (
             <article
               key={card.id}
-              className={cn("rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] p-3 space-y-1.5", accentClass)}
+              className={cn(
+                "rounded-lg border p-3 space-y-1.5",
+                "bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-pulse-card)]",
+                "border-[var(--color-border-subtle)] dark:border-[var(--color-border-pulse-card)]",
+                accentClass
+              )}
             >
-              <span className={cn("text-xs uppercase tracking-[0.3em] font-semibold", labelClass)}>{card.label}</span>
-              <h4 className="text-lg font-semibold text-[var(--color-fg-primary)] font-heading tracking-wide">{card.title}</h4>
-              <p className="text-sm text-[var(--color-fg-secondary)] leading-relaxed">{card.detail}</p>
+              <span className={cn(
+                "text-xs uppercase tracking-[0.3em] font-semibold",
+                labelClass,
+                card.accent === "risk" && "dark:text-[var(--color-pulse-risk)]"
+              )}>{card.label}</span>
+              <h4 className={cn(
+                "text-lg font-semibold font-heading tracking-wide",
+                "text-[var(--color-fg-primary)] dark:text-[var(--color-pulse-heading)]"
+              )}>{card.title}</h4>
+              <p className={cn(
+                "text-sm leading-relaxed",
+                "text-[var(--color-fg-secondary)] dark:text-[var(--color-pulse-body)]"
+              )}>{card.detail}</p>
             </article>
           )
         })}
