@@ -15,3 +15,114 @@
  ✓ Compiled in 239ms
  ✓ Compiled in 155ms
  ✓ Compiled in 190ms
+ ✓ Compiled in 654ms
+ ✓ Compiled in 195ms
+ ✓ Compiled in 223ms
+ ✓ Compiled in 691ms
+ ✓ Compiled in 621ms
+ ✓ Compiled in 180ms
+ ✓ Compiled in 466ms
+ ✓ Compiled in 287ms
+ ✓ Compiled in 116ms
+ ✓ Compiled in 164ms
+ ✓ Compiled in 177ms
+ ✓ Compiled in 405ms
+ ✓ Compiled in 364ms
+ ✓ Compiled in 322ms
+ ✓ Compiled in 167ms
+ ✓ Compiled in 386ms
+ ✓ Compiled in 403ms
+ ✓ Compiled in 250ms
+ ✓ Compiled in 185ms
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 4.1s (compile: 3.0s, proxy.ts: 274ms, render: 797ms)
+ ✓ Compiled in 40ms
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 952ms (compile: 7ms, proxy.ts: 439ms, render: 506ms)
+ ✓ Compiled in 25ms
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 926ms (compile: 5ms, proxy.ts: 200ms, render: 720ms)
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 287ms (compile: 4ms, proxy.ts: 137ms, render: 147ms)
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 676ms (compile: 10ms, proxy.ts: 171ms, render: 494ms)
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 399ms (compile: 5ms, proxy.ts: 196ms, render: 198ms)
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 675ms (compile: 5ms, proxy.ts: 166ms, render: 504ms)
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 378ms (compile: 7ms, proxy.ts: 177ms, render: 194ms)
+Gemini API error: 429 {
+  error: {
+    code: 429,
+    message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. ',
+    status: 'RESOURCE_EXHAUSTED'
+  }
+}
+ POST /api/chat 429 in 566ms (compile: 21ms, proxy.ts: 276ms, render: 269ms)
+   Reload env: .env.local
+ GET / 200 in 588ms (compile: 155ms, proxy.ts: 361ms, render: 72ms)
+ GET / 200 in 392ms (compile: 140ms, proxy.ts: 194ms, render: 57ms)
+ GET / 200 in 493ms (compile: 110ms, proxy.ts: 212ms, render: 170ms)
+ GET / 200 in 244ms (compile: 19ms, proxy.ts: 148ms, render: 77ms)
+ ✓ Compiled in 108ms
+ POST /api/chat 200 in 4.6s (compile: 76ms, proxy.ts: 540ms, render: 4.0s)
+ ✓ Compiled in 145ms
+ GET / 200 in 574ms (compile: 79ms, proxy.ts: 278ms, render: 218ms)
+ GET / 200 in 347ms (compile: 8ms, proxy.ts: 232ms, render: 106ms)
+ GET / 200 in 223ms (compile: 7ms, proxy.ts: 162ms, render: 53ms)
+ GET / 200 in 267ms (compile: 5ms, proxy.ts: 212ms, render: 50ms)
+ ✓ Compiled in 49ms
+ ✓ Compiled in 59ms
+ ✓ Compiled in 63ms
+ ✓ Compiled in 65ms
+ ✓ Compiled in 40ms
+ ✓ Compiled in 38ms

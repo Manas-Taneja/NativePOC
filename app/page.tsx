@@ -22,6 +22,7 @@ import {
   generateNativeResponse,
 } from "@/lib/mock-data"
 import { useChat } from "@/hooks/useChat"
+import type { Message } from "@/hooks/useChat"
 import { InviteMemberModal } from "@/components/invite-member-modal"
 import { NewDMModal } from "@/components/new-dm-modal"
 import { useUser } from "@/contexts/user-context"
@@ -34,17 +35,19 @@ export default function Home() {
   const supabase = createClient()
   const { userId: currentUserId } = useUser()
   const [organizationId, setOrganizationId] = React.useState<string | null>(null)
+  const [organizationName, setOrganizationName] = React.useState<string>("NativeIQ")
   const [isNativeResponding, setIsNativeResponding] = React.useState(false)
   const [isRightColumnVisible, setIsRightColumnVisible] = React.useState(true)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(true)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false)
   const [showInviteModal, setShowInviteModal] = React.useState(false)
   const [showNewDMModal, setShowNewDMModal] = React.useState(false)
+  const [aiError, setAiError] = React.useState<string | null>(null)
+  const lastPromptRef = React.useRef<string | null>(null)
 
   // Fetch organization ID and set current user
   React.useEffect(() => {
     async function fetchOrgId() {
-      const supabase = createClient()
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -58,6 +61,10 @@ export default function Home() {
 
       if (profile?.organization_id) {
         setOrganizationId(profile.organization_id)
+        const { data: org } = await supabase.from("organizations").select("name").eq("id", profile.organization_id).single()
+        if (org?.name) {
+          setOrganizationName(org.name)
+        }
       }
     }
 
@@ -75,49 +82,80 @@ export default function Home() {
     }))
   }, [messages])
 
+  const hasNativeMention = React.useCallback((text: string) => {
+    return /(^|\s)@native\b/i.test(text)
+  }, [])
+
+  const requestAIResponse = React.useCallback(async (prompt: string) => {
+    lastPromptRef.current = prompt
+    setIsNativeResponding(true)
+    setAiError(null)
+    const history = buildChatHistory()
+    history.push({ role: "user", content: prompt })
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: prompt,
+          history,
+        }),
+      })
+
+      if (!response.ok) {
+        const details = await response.json().catch(() => ({}))
+        logger.warn("Chat request failed:", { status: response.status, details })
+        const fallback = generateNativeResponse(prompt)
+        await sendMessage(fallback, { isAI: true })
+        setAiError("Native request failed. Using fallback — retry?")
+        return
+      }
+
+      const data = await response.json()
+      const assistantMessage = data.message ?? generateNativeResponse(prompt)
+      await sendMessage(assistantMessage, { isAI: true })
+      setAiError(null)
+    } catch (error) {
+      logger.error("Falling back to local AI:", error)
+      setAiError("Native request failed. Using fallback — retry?")
+      const fallback = generateNativeResponse(prompt)
+      await sendMessage(fallback, { isAI: true })
+    } finally {
+      setIsNativeResponding(false)
+    }
+  }, [buildChatHistory, sendMessage])
+
   const handleSendMessage = React.useCallback(
     async (content: string) => {
       await sendMessage(content)
 
-      // Determine if AI should respond based on channel type
-      const shouldCallAI =
-        currentChannel?.type === "ai-assistant" || // Always respond in AI channel
-        (currentChannel?.type === "team" && content.toLowerCase().includes("@native")) // Respond in team if mentioned
+      // Only call AI when explicitly mentioned
+      const shouldCallAI = hasNativeMention(content)
 
       if (shouldCallAI) {
-        setIsNativeResponding(true)
-        const history = buildChatHistory()
-        history.push({ role: "user", content })
-
-        try {
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              message: content,
-              history,
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error("Chat request failed")
-          }
-
-          const data = await response.json()
-          const assistantMessage = data.message ?? generateNativeResponse(content)
-          await sendMessage(assistantMessage, { isAI: true })
-        } catch (error) {
-          logger.error("Falling back to local AI:", error)
-          const fallback = generateNativeResponse(content)
-          await sendMessage(fallback, { isAI: true })
-        } finally {
-          setIsNativeResponding(false)
-        }
+        await requestAIResponse(content)
       }
       // For direct channels, just send the message (no AI)
     },
-    [buildChatHistory, sendMessage, currentChannel],
+    [requestAIResponse, sendMessage, currentChannel, hasNativeMention],
   )
+
+  const handleRetryAI = React.useCallback(async () => {
+    if (!lastPromptRef.current) return
+    await requestAIResponse(lastPromptRef.current)
+  }, [requestAIResponse])
+
+  const handleRegenerate = React.useCallback(async (message: Message) => {
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
+    const prompt = lastUserMessage?.content || lastPromptRef.current
+    if (!prompt) return
+    await requestAIResponse(prompt)
+  }, [messages, requestAIResponse])
+
+  const handleFeedback = React.useCallback((message: Message, value: "up" | "down") => {
+    logger.info("Assistant feedback", { messageId: message.id, value })
+  }, [])
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] relative">
@@ -127,7 +165,7 @@ export default function Home() {
             channels={channels}
             currentChannel={currentChannel}
             members={members}
-            organizationName="NativeIQ"
+            organizationName={organizationName}
             onSelectChannel={(channel) => {
               void selectChannel(channel)
             }}
@@ -254,7 +292,17 @@ export default function Home() {
                     </div>
                   ) : (
                     <ErrorBoundary>
-                      <ChatStream messages={messages} onSendMessage={handleSendMessage} isNativeResponding={isNativeResponding} />
+                      <ChatStream
+                        messages={messages}
+                        onSendMessage={handleSendMessage}
+                        isNativeResponding={isNativeResponding}
+                        channelType={currentChannel?.type}
+                        channelName={currentChannel?.name}
+                        aiError={aiError}
+                        onRetryAI={handleRetryAI}
+                        onRegenerate={handleRegenerate}
+                        onFeedback={handleFeedback}
+                      />
                     </ErrorBoundary>
                   )}
                 </div>

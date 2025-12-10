@@ -53,9 +53,26 @@ export function ChannelSidebar({
   const [isHovered, setIsHovered] = React.useState(false)
   const isExpanded = !collapsed || isHovered
 
+  const currentChannelTip = React.useMemo(() => {
+    if (currentChannel?.type === "team") {
+      return "Team chat — mention @native when you want AI help."
+    }
+    if (currentChannel?.type === "direct") {
+      return "Direct message — mention @native to loop AI in."
+    }
+    return "Select a channel to get started. Mention @native for AI."
+  }, [currentChannel])
+
   const handleChannelSelect = (channel: Channel) => {
     onSelectChannel?.(channel)
     onMobileClose?.()
+  }
+
+  const getUnreadCount = (channel: Channel) => {
+    // Support unread_count stored on channel row or inside metadata
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const directField = (channel as any)?.unread_count
+    return directField ?? (channel.metadata?.unread_count ?? 0)
   }
 
   const renderSidebarContent = (showCloseButton = false) => (
@@ -111,47 +128,26 @@ export function ChannelSidebar({
 
       <header className="border-b border-[var(--color-border-subtle)] px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-secondary)] flex items-center justify-center font-semibold text-[var(--color-bg-base)]">
-            {organizationName[0] ?? "N"}
+          <div className="h-10 w-10 rounded-lg bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] flex items-center justify-center overflow-hidden">
+            <img
+              src="/NativeLogo.svg"
+              alt={organizationName || "Native"}
+              className="h-9 w-auto"
+            />
           </div>
           <div>
             <p className="text-sm font-semibold text-[var(--color-fg-primary)] font-ui">{organizationName}</p>
             <span className="text-xs text-[var(--color-fg-tertiary)] font-ui">{members.length} members</span>
           </div>
         </div>
+        <p className="mt-3 text-[11px] text-[var(--color-fg-secondary)] font-ui flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+          {currentChannelTip}
+        </p>
       </header>
 
       {/* Channels */}
       <div className="flex-1 overflow-y-auto">
-          {/* AI Assistant */}
-          <section className="mb-6">
-            <h4 className="px-5 mb-2 text-[0.7rem] uppercase tracking-[0.2em] text-[var(--color-accent)] font-semibold">
-              Native AI
-            </h4>
-            <ul>
-              {channels
-                .filter((ch) => ch.type === "ai-assistant")
-                .map((channel) => (
-                  <li key={channel.id}>
-                    <button
-                      onClick={() => handleChannelSelect(channel)}
-                      className={cn(
-                        "w-full px-5 py-2 text-left text-sm transition-colors flex items-center gap-3 font-ui",
-                        currentChannel?.id === channel.id
-                          ? "bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-medium"
-                          : "text-[var(--color-fg-secondary)] hover:bg-[var(--color-bg-subtle)]"
-                      )}
-                    >
-                      {currentChannel?.id === channel.id && (
-                        <div className="h-2 w-2 rounded-full bg-[var(--color-sidebar-active-text)]" />
-                      )}
-                      <span>{channel.name}</span>
-                    </button>
-                  </li>
-                ))}
-            </ul>
-          </section>
-
           {/* Team Chat */}
           <section className="mb-6">
             <h4 className="px-5 mb-2 text-[0.7rem] uppercase tracking-[0.2em] text-[var(--color-accent-secondary)] font-semibold">
@@ -167,6 +163,8 @@ export function ChannelSidebar({
                     "bg-[var(--color-accent-secondary)]/80",
                   ]
                   const colorClass = colors[index % colors.length]
+                  const unreadCount = getUnreadCount(channel)
+                  const avatarStack = members.slice(0, 3)
                   return (
                     <li key={channel.id}>
                       <button
@@ -179,7 +177,28 @@ export function ChannelSidebar({
                         )}
                       >
                         <div className={cn("h-2 w-2 rounded-full", colorClass)} />
-                        <span>{channel.name}</span>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <span className="truncate">{channel.name}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[11px] text-[var(--color-fg-tertiary)]">Team + AI</span>
+                            <div className="flex -space-x-2">
+                              {avatarStack.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="h-5 w-5 rounded-full border border-[var(--color-bg-base)] bg-[var(--color-bg-subtle)] flex items-center justify-center text-[10px] text-[var(--color-fg-secondary)]"
+                                  title={member.full_name ?? "Member"}
+                                >
+                                  {member.full_name ? getInitials(member.full_name) : "?"}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        {unreadCount > 0 && (
+                          <span className="ml-auto rounded-full bg-[var(--color-accent-muted)] text-[var(--color-accent)] px-2 py-[2px] text-[11px]">
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                          </span>
+                        )}
                       </button>
                     </li>
                   )
@@ -223,6 +242,8 @@ export function ChannelSidebar({
                     "bg-[var(--color-accent-secondary)]",
                   ]
                   const avatarClass = avatarColors[index % avatarColors.length]
+                  const otherMember = members.find((m) => m.id === otherUserId)
+                  const unreadCount = getUnreadCount(channel)
 
                   return (
                     <li key={channel.id}>
@@ -235,10 +256,26 @@ export function ChannelSidebar({
                             : "text-[var(--color-fg-secondary)] hover:bg-[var(--color-accent)]/5"
                         )}
                       >
-                        <div className={cn("h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white", avatarClass)}>
-                          {displayName.charAt(0).toUpperCase()}
+                        {otherMember?.avatar_url ? (
+                          <img
+                            src={otherMember.avatar_url}
+                            alt={displayName}
+                            className="h-7 w-7 rounded-full object-cover border border-[var(--color-border-subtle)]"
+                          />
+                        ) : (
+                          <div className={cn("h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-semibold text-white", avatarClass)}>
+                            {displayName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <span className="truncate">{displayName}</span>
+                          <span className="text-[11px] text-[var(--color-fg-tertiary)]">Direct message</span>
                         </div>
-                        <span>{displayName}</span>
+                        {unreadCount > 0 && (
+                          <span className="ml-auto rounded-full bg-[var(--color-accent-muted)] text-[var(--color-accent)] px-2 py-[2px] text-[11px]">
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                          </span>
+                        )}
                       </button>
                     </li>
                   )

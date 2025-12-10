@@ -12,12 +12,29 @@ interface ChatStreamProps {
   className?: string
   onSendMessage?: (content: string) => void
   isNativeResponding?: boolean
+  channelType?: "team" | "direct"
+  channelName?: string | null
+  aiError?: string | null
+  onRetryAI?: () => void
+  onRegenerate?: (message: Message) => void
+  onFeedback?: (message: Message, value: "up" | "down") => void
 }
 
 /**
  * ChatStream - iOS Messages-style chat interface with streaming
  */
-export function ChatStream({ messages, className, onSendMessage, isNativeResponding }: ChatStreamProps) {
+export function ChatStream({
+  messages,
+  className,
+  onSendMessage,
+  isNativeResponding,
+  channelType = "team",
+  channelName,
+  aiError,
+  onRetryAI,
+  onRegenerate,
+  onFeedback,
+}: ChatStreamProps) {
   const { userId: currentUserId } = useUser()
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [collapsedMessages, setCollapsedMessages] = React.useState<Set<string>>(new Set())
@@ -27,6 +44,10 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
   const [allowAnimation, setAllowAnimation] = React.useState(true)
   const wasRespondingRef = React.useRef(false)
   const [justReplacedMessageId, setJustReplacedMessageId] = React.useState<string | null>(null)
+  const inputRef = React.useRef<HTMLTextAreaElement>(null)
+  const [showScrollToLatest, setShowScrollToLatest] = React.useState(false)
+  const [copiedMessageId, setCopiedMessageId] = React.useState<string | null>(null)
+  const [feedbackMap, setFeedbackMap] = React.useState<Record<string, "up" | "down">>({})
 
   React.useEffect(() => {
     const wasResponding = wasRespondingRef.current
@@ -79,15 +100,151 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
     setInputValue("")
   }
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault()
+      inputRef.current?.focus()
+      return
+    }
+
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault()
+      const trimmed = inputValue.trim()
+      if (!trimmed) return
+      onSendMessage?.(trimmed)
+      setInputValue("")
+    }
+  }
+
+  React.useEffect(() => {
+    const listener = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+
+    window.addEventListener("keydown", listener)
+    return () => window.removeEventListener("keydown", listener)
+  }, [])
+
+  const resizeComposer = () => {
+    if (!inputRef.current) return
+    const el = inputRef.current
+    el.style.height = "auto"
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`
+  }
+
+  React.useEffect(() => {
+    resizeComposer()
+  }, [inputValue])
+
+  const handleScroll = React.useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const threshold = 120
+    const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight)
+    setShowScrollToLatest(distanceFromBottom > threshold)
+  }, [])
+
+  const scrollToLatest = () => {
+    if (!scrollRef.current) return
+    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
+    setShowScrollToLatest(false)
+  }
+
+  const placeholder = React.useMemo(() => {
+    if (channelType === "team") {
+      return "Chat with team — mention @native when you want AI help"
+    }
+    return "Direct message — mention @native to pull AI in"
+  }, [channelType])
+
+  const helperText = React.useMemo(() => {
+    if (channelType === "team") {
+      return "@native to loop in AI. Enter to send; Shift+Enter for newline; Cmd/Ctrl+K to focus."
+    }
+    return "Private DM. Mention @native for AI. Enter to send; Shift+Enter newline; Cmd/Ctrl+K focus."
+  }, [channelType])
+
+  const channelStatus = React.useMemo(() => {
+    if (channelType === "team") {
+      return {
+        badge: "@native",
+        text: "Team chat — mention @native when you want AI to reply.",
+      }
+    }
+    return {
+      badge: "DM",
+      text: "Private conversation — add @native to invite AI.",
+    }
+  }, [channelType])
+
+  const handleCopy = async (message: Message) => {
+    try {
+      await navigator.clipboard.writeText(message.content)
+      setCopiedMessageId(message.id)
+      setTimeout(() => setCopiedMessageId(null), 1500)
+    } catch (error) {
+      console.error("Copy failed", error)
+    }
+  }
+
+  const handleFeedbackClick = (message: Message, value: "up" | "down") => {
+    setFeedbackMap((prev) => ({ ...prev, [message.id]: value }))
+    onFeedback?.(message, value)
+  }
+
   return (
     <div className={cn("flex flex-col h-full min-h-0 overflow-hidden", className)}>
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden py-6 pb-4 scroll-smooth minimal-scrollbar relative"
         style={{ scrollBehavior: "smooth", contain: "layout style paint" }}
+        onScroll={handleScroll}
       >
         <div className="px-5 space-y-4">
           <AnimatePresence mode="popLayout" initial={false}>
+          {messages.length === 0 && (
+            <motion.div
+              layout
+              className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-6 text-[var(--color-fg-secondary)] space-y-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center font-semibold">
+                  {channelType === "direct" ? "DM" : "Team"}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-fg-primary)]">
+                    {channelType === "team"
+                      ? "Say hi to the team and @native for AI help."
+                      : "Start a direct message; @native to invite AI."}
+                  </p>
+                  <p className="text-xs text-[var(--color-fg-tertiary)]">
+                    {channelName ? `Channel: ${channelName}` : "No history yet."}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
+                  <p className="font-semibold text-[var(--color-fg-primary)]">Try</p>
+                  <p className="text-[var(--color-fg-secondary)] mt-1">
+                    {channelType === "team" ? "“@native summarize this thread”" : "“@native summarize today’s alerts”"}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
+                  <p className="font-semibold text-[var(--color-fg-primary)]">Shortcuts</p>
+                  <p className="text-[var(--color-fg-secondary)] mt-1">Enter send · Shift+Enter newline · Cmd/Ctrl+K focus</p>
+                </div>
+                <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
+                  <p className="font-semibold text-[var(--color-fg-primary)]">Visibility</p>
+                  <p className="text-[var(--color-fg-secondary)] mt-1">
+                    {channelType === "direct" ? "Only participants see messages." : "Visible to everyone in this channel."}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
           {messages.map((message) => {
             const isCollapsed = collapsedMessages.has(message.id)
             const isAssistant = message.role === "assistant"
@@ -165,29 +322,60 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
                       {formatRelativeTime(message.timestamp)}
                     </p>
 
+                    {isAssistant && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-[var(--color-fg-secondary)]">
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(message)}
+                          className="rounded-md px-2 py-1 bg-[var(--color-bg-subtle)] hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-colors"
+                        >
+                          {copiedMessageId === message.id ? "Copied" : "Copy"}
+                        </button>
+                        {onRegenerate && (
+                          <button
+                            type="button"
+                            onClick={() => onRegenerate(message)}
+                            className="rounded-md px-2 py-1 bg-[var(--color-accent-muted)] text-[var(--color-accent)] border border-[var(--color-accent-border)] hover:bg-[var(--color-accent-muted)]/70 transition-colors"
+                          >
+                            Regenerate
+                          </button>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            aria-pressed={feedbackMap[message.id] === "up"}
+                            onClick={() => handleFeedbackClick(message, "up")}
+                            className={cn(
+                              "h-7 w-7 rounded-full border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] transition-colors",
+                              feedbackMap[message.id] === "up" && "bg-[var(--color-accent-muted)] text-[var(--color-accent)] border-[var(--color-accent-border)]"
+                            )}
+                            aria-label="Thumbs up"
+                          >
+                            👍
+                          </button>
+                          <button
+                            type="button"
+                            aria-pressed={feedbackMap[message.id] === "down"}
+                            onClick={() => handleFeedbackClick(message, "down")}
+                            className={cn(
+                              "h-7 w-7 rounded-full border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] transition-colors",
+                              feedbackMap[message.id] === "down" && "bg-[var(--color-accent-muted)] text-[var(--color-accent)] border-[var(--color-accent-border)]"
+                            )}
+                            aria-label="Thumbs down"
+                          >
+                            👎
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {shouldShowCollapse && (
                       <button
                         onClick={() => toggleMessageCollapse(message.id)}
                         className="mt-2 flex items-center justify-center w-full text-[11px] text-[var(--color-fg-tertiary)] hover:text-[var(--color-fg-secondary)] transition-colors"
-                        aria-label={isCollapsed ? "Expand message" : "Collapse message"}
+                        aria-label={isCollapsed ? "Expand full answer" : "Show less"}
                       >
-                        <motion.svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 12 12"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          animate={{ rotate: isCollapsed ? 180 : 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <path
-                            d="M3 4.5L6 7.5L9 4.5"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </motion.svg>
+                        {isCollapsed ? "Expand full answer" : "Show less"}
                       </button>
                     )}
                   </div>
@@ -217,37 +405,104 @@ export function ChatStream({ messages, className, onSendMessage, isNativeRespond
                   Native
                 </span>
                 <div className="rounded-lg px-4 py-3 bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]">
-                  <div className="native-loader" aria-label="Native is thinking">
+                  <div className="native-loader" aria-label="Native is thinking" role="status" aria-live="polite">
                     <span />
                     <span />
                     <span />
                   </div>
+                  <p className="text-[11px] text-[var(--color-fg-secondary)] mt-2">Native is thinking (~5s)</p>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
         </div>
+        <AnimatePresence>
+          {showScrollToLatest && (
+            <motion.button
+              type="button"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              onClick={scrollToLatest}
+              className="absolute bottom-6 right-6 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] shadow-md px-3 py-2 text-xs font-medium text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-subtle)] transition-colors"
+              aria-label="Jump to latest message"
+            >
+              Jump to latest
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       <form
         onSubmit={handleSubmit}
         className="py-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]"
       >
-        <div className="flex items-center gap-3 px-4">
-          <input
-            className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-2 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 font-ui"
-            placeholder='Say something… start with "Native" for an AI assist'
-            value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-          />
-          <button
-            type="submit"
-            className="h-10 px-5 rounded-lg bg-[var(--color-accent)] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-ui"
-            disabled={!inputValue.trim() || isNativeResponding}
-          >
-            {isNativeResponding ? "Thinking…" : "Send"}
-          </button>
+        <div className="px-4 space-y-2">
+          {aiError && (
+            <div className="flex items-center gap-3 rounded-lg border border-[var(--color-error)]/30 bg-[var(--color-error)]/5 px-3 py-2 text-[12px] text-[var(--color-error)]"
+              role="alert"
+              aria-live="assertive"
+            >
+              <span className="font-semibold">Native issue</span>
+              <span className="text-[var(--color-fg-secondary)] text-[11px]">{aiError}</span>
+              {onRetryAI && (
+                <button
+                  type="button"
+                  onClick={onRetryAI}
+                  className="ml-auto rounded-md px-2 py-1 bg-[var(--color-accent)] text-white text-[11px] hover:bg-[var(--color-accent-hover)] transition-colors"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-[11px] text-[var(--color-fg-secondary)] font-ui">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-accent-muted)] text-[var(--color-accent)] px-2 py-1">
+              <span className="h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+              {channelStatus.badge}
+            </span>
+            <span className="truncate">{channelStatus.text}</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <textarea
+              ref={inputRef}
+              className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 font-ui resize-none leading-5"
+              placeholder={placeholder}
+              value={inputValue}
+              rows={1}
+              onChange={(event) => setInputValue(event.target.value)}
+              onKeyDown={handleKeyDown}
+              onInput={resizeComposer}
+              aria-label="Chat message composer"
+            />
+            <button
+              type="submit"
+              className="h-11 px-5 rounded-lg bg-[var(--color-accent)] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-ui inline-flex items-center gap-2"
+              disabled={!inputValue.trim() || isNativeResponding}
+              aria-label={isNativeResponding ? "Native is responding" : "Send message"}
+            >
+              {isNativeResponding ? (
+                <>
+                  <span className="inline-block h-4 w-4 border-2 border-white/60 border-t-white rounded-full animate-spin" aria-hidden="true" />
+                  <span>Thinking…</span>
+                </>
+              ) : (
+                "Send"
+              )}
+            </button>
+          </div>
+          <div className="text-[11px] text-[var(--color-fg-tertiary)] font-ui flex items-center gap-2">
+            <span className="inline-flex h-5 min-w-[24px] items-center justify-center rounded-full bg-[var(--color-accent-muted)] text-[var(--color-accent)] px-2">
+              {channelType === "direct" ? "DM" : channelType === "team" ? "Team" : "Native"}
+            </span>
+            <span className="truncate">
+              {helperText}
+            </span>
+            {channelName && (
+              <span className="ml-auto text-[var(--color-fg-secondary)] truncate">Channel: {channelName}</span>
+            )}
+          </div>
         </div>
       </form>
     </div>
