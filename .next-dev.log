@@ -1,0 +1,16 @@
+
+> NativePOC@0.1.0 dev
+> next dev --hostname 0.0.0.0 --port 3000
+
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://0.0.0.0:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 4.3s
+ ○ Compiling / ...
+ GET / 200 in 16.3s (compile: 14.7s, proxy.ts: 845ms, render: 709ms)
+ ✓ Compiled in 239ms
+ ✓ Compiled in 155ms

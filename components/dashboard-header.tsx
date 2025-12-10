@@ -110,9 +110,11 @@ export function DashboardHeader({ className, insights = [], metrics = [], onMobi
             </button>
           )}
           <div className="flex items-center space-x-2">
-            <h1 className="text-lg font-semibold text-[var(--color-fg-primary)] font-heading tracking-wide">
-              Native
-            </h1>
+            <img
+              src="/NativeLogo.svg"
+              alt="Native"
+              className="h-10 w-auto"
+            />
           </div>
         </div>
 
