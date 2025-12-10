@@ -155,28 +155,25 @@ export function ChatStream({
 
   const placeholder = React.useMemo(() => {
     if (channelType === "team") {
-      return "Chat with team — mention @native when you want AI help"
+      return "Chat with team — @native to loop in AI"
     }
-    return "Direct message — mention @native to pull AI in"
+    return "Direct message — @native to loop in AI"
   }, [channelType])
 
   const helperText = React.useMemo(() => {
-    if (channelType === "team") {
-      return "@native to loop in AI. Enter to send; Shift+Enter for newline; Cmd/Ctrl+K to focus."
-    }
-    return "Private DM. Mention @native for AI. Enter to send; Shift+Enter newline; Cmd/Ctrl+K focus."
-  }, [channelType])
+    return "Enter to send; Shift+Enter newline; Cmd/Ctrl+K focus."
+  }, [])
 
   const channelStatus = React.useMemo(() => {
     if (channelType === "team") {
       return {
-        badge: "@native",
-        text: "Team chat — mention @native when you want AI to reply.",
+        badge: "Team",
+        text: "AI replies only when @native is mentioned.",
       }
     }
     return {
       badge: "DM",
-      text: "Private conversation — add @native to invite AI.",
+      text: "AI joins when @native is mentioned.",
     }
   }, [channelType])
 
@@ -217,7 +214,7 @@ export function ChatStream({
                 <div>
                   <p className="text-sm font-semibold text-[var(--color-fg-primary)]">
                     {channelType === "team"
-                      ? "Say hi to the team and @native for AI help."
+                      ? "Say hi to the team; @native when you want AI."
                       : "Start a direct message; @native to invite AI."}
                   </p>
                   <p className="text-xs text-[var(--color-fg-tertiary)]">
@@ -457,13 +454,6 @@ export function ChatStream({
               )}
             </div>
           )}
-          <div className="flex items-center gap-2 text-[11px] text-[var(--color-fg-secondary)] font-ui">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-accent-muted)] text-[var(--color-accent)] px-2 py-1">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-accent)]" />
-              {channelStatus.badge}
-            </span>
-            <span className="truncate">{channelStatus.text}</span>
-          </div>
           <div className="flex items-start gap-3">
             <textarea
               ref={inputRef}
