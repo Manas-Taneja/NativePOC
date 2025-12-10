@@ -283,6 +283,15 @@ body {
   background: var(--color-border-default);
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hide scrollbar when not scrolling (fade effect) */
 .minimal-scrollbar::-webkit-scrollbar-thumb {
   opacity: 0.3;

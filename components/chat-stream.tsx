@@ -467,7 +467,7 @@ export function ChatStream({
           <div className="flex items-start gap-3">
             <textarea
               ref={inputRef}
-              className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 font-ui resize-none leading-5"
+              className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 font-ui resize-none leading-5 no-scrollbar overflow-hidden"
               placeholder={placeholder}
               value={inputValue}
               rows={1}
