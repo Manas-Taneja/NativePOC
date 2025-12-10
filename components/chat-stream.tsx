@@ -3,7 +3,7 @@
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn, formatRelativeTime } from "@/lib/utils"
-import { Message } from "@/lib/mock-data"
+import { type Message } from "@/hooks/useChat"
 import { chatMessageFadeIn, fadeOutOnly } from "@/lib/animations"
 import { useUser } from "@/contexts/user-context"
 
@@ -12,7 +12,7 @@ interface ChatStreamProps {
   className?: string
   onSendMessage?: (content: string) => void
   isNativeResponding?: boolean
-  channelType?: "team" | "direct"
+  channelType?: "team" | "direct" | "ai-assistant"
   channelName?: string | null
   aiError?: string | null
   onRetryAI?: () => void

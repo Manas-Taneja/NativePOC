@@ -126,3 +126,6 @@ Gemini API error: 429 {
  ✓ Compiled in 65ms
  ✓ Compiled in 40ms
  ✓ Compiled in 38ms
+ ✓ Compiled in 51ms
+ GET /public/MessageIcon.png 404 in 1088ms (compile: 994ms, render: 94ms)
+ ✓ Compiled in 124ms

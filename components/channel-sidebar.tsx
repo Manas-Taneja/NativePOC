@@ -130,7 +130,7 @@ export function ChannelSidebar({
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] flex items-center justify-center overflow-hidden">
             <img
-              src="/NativeLogo.svg"
+              src="/MessageIcon.png"
               alt={organizationName || "Native"}
               className="h-9 w-auto"
             />
