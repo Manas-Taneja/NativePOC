@@ -113,7 +113,7 @@ export function DashboardHeader({ className, insights = [], metrics = [], onMobi
             <img
               src="/NativeLogo.svg"
               alt="Native"
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
           </div>
         </div>
