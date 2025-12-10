@@ -212,7 +212,7 @@ export default function Home() {
             >
               {/* Left Column: Native Chat Stream */}
               <Card className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
-                <div className="border-b border-[var(--color-border-subtle)] p-4">
+                <div className="border-b border-[var(--color-border-subtle)] p-4 font-heading">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-secondary)] flex items-center justify-center shadow-lg">
