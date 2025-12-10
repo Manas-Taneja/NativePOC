@@ -8,16 +8,16 @@
   --color-fg-primary: #1a1a1a;
   --color-fg-secondary: #525252;
   --color-fg-tertiary: #a1a1a1;
-  --color-accent: #768863;
-  --color-accent-hover: #6a7a58;
-  --color-accent-secondary: #93b6b4;
+  --color-accent: #1a6391;
+  --color-accent-hover: #15527a;
+  --color-accent-secondary: #92b7b4;
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   
   /* Brand Colors for Tailwind */
-  --color-brand-olive: #768863;
-  --color-brand-teal: #93b6b4;
+  --color-brand-olive: #1a6391;
+  --color-brand-teal: #92b7b4;
   --color-brand-black: #151715;
   --color-brand-surface: #1e221e;
   --color-brand-surface-light: #27272a;
@@ -61,34 +61,34 @@
   --color-fg-disabled: #d1d5db;
   
   /* Primary Action - Olive Green */
-  --color-accent: #768863;
-  --color-accent-hover: #6a7a58;
-  --color-accent-muted: rgba(118, 136, 99, 0.1);
-  --color-accent-border: rgba(118, 136, 99, 0.3);
-  --color-accent-active-bg: rgba(147, 182, 180, 0.1);
+  --color-accent: #1a6391;
+  --color-accent-hover: #15527a;
+  --color-accent-muted: rgba(26, 99, 145, 0.1);
+  --color-accent-border: rgba(26, 99, 145, 0.3);
+  --color-accent-active-bg: rgba(146, 183, 180, 0.1);
   
   /* Secondary Accents - Teal */
-  --color-accent-secondary: #93b6b4;
-  --color-accent-secondary-hover: #7fa5a3;
-  --color-accent-secondary-muted: rgba(147, 182, 180, 0.1);
-  --color-accent-secondary-border: rgba(147, 182, 180, 0.3);
+  --color-accent-secondary: #92b7b4;
+  --color-accent-secondary-hover: #7aa2a0;
+  --color-accent-secondary-muted: rgba(146, 183, 180, 0.1);
+  --color-accent-secondary-border: rgba(146, 183, 180, 0.3);
   
   /* Chat Bubble Colors - Light Mode */
-  --color-chat-user-bg: #768863;
+  --color-chat-user-bg: #1a6391;
   --color-chat-user-text: #ffffff;
   --color-chat-system-bg: #f3f4f6;
   --color-chat-system-text: #1a1a1a;
   
   /* Sidebar Active State - Light Mode */
-  --color-sidebar-active-bg: rgba(118, 136, 99, 0.15);
-  --color-sidebar-active-text: #768863;
+  --color-sidebar-active-bg: rgba(26, 99, 145, 0.15);
+  --color-sidebar-active-text: #1a6391;
   
   /* Avatar Colors */
-  --color-avatar-bg: #93b6b4;
+  --color-avatar-bg: #92b7b4;
   --color-avatar-text: #ffffff;
   
   /* Semantic Colors - Earthy Aesthetic */
-  --color-success: #768863;
+  --color-success: #92b7b4;
   --color-warning: #f59e0b;
   --color-error: #cf6679;
   
@@ -158,21 +158,21 @@
   --color-fg-disabled: #6b7280;
   
   /* Primary Action - Teal (better contrast on dark) */
-  --color-accent: #93b6b4;
-  --color-accent-hover: #7fa5a3;
-  --color-accent-muted: rgba(147, 182, 180, 0.15);
-  --color-accent-border: rgba(147, 182, 180, 0.3);
-  --color-accent-active-bg: rgba(118, 136, 99, 0.15);
+  --color-accent: #1a6391;
+  --color-accent-hover: #15527a;
+  --color-accent-muted: rgba(26, 99, 145, 0.15);
+  --color-accent-border: rgba(26, 99, 145, 0.3);
+  --color-accent-active-bg: rgba(146, 183, 180, 0.15);
   
   /* Secondary Accents - Olive (for active states, accents) */
-  --color-accent-secondary: #768863;
-  --color-accent-secondary-hover: #6a7a58;
-  --color-accent-secondary-muted: rgba(118, 136, 99, 0.15);
-  --color-accent-secondary-border: rgba(118, 136, 99, 0.3);
+  --color-accent-secondary: #92b7b4;
+  --color-accent-secondary-hover: #7aa2a0;
+  --color-accent-secondary-muted: rgba(146, 183, 180, 0.15);
+  --color-accent-secondary-border: rgba(146, 183, 180, 0.3);
   
   /* Chat Bubble Colors - Dark Mode */
-  --color-chat-user-bg: #93b6b4;
-  --color-chat-user-text: #151715;
+  --color-chat-user-bg: #1a6391;
+  --color-chat-user-text: #ffffff;
   --color-chat-system-bg: #27272a;
   --color-chat-system-text: #d1d5db;
   
@@ -186,15 +186,15 @@
   --color-pulse-risk: #f87171;
   
   /* Sidebar Active State - Dark Mode (same as light for consistency) */
-  --color-sidebar-active-bg: rgba(118, 136, 99, 0.15);
-  --color-sidebar-active-text: #768863;
+  --color-sidebar-active-bg: rgba(26, 99, 145, 0.15);
+  --color-sidebar-active-text: #1a6391;
   
   /* Avatar Colors */
-  --color-avatar-bg: #93b6b4;
+  --color-avatar-bg: #92b7b4;
   --color-avatar-text: #151715;
   
   /* Semantic Colors - Earthy Aesthetic */
-  --color-success: #768863;
+  --color-success: #92b7b4;
   --color-warning: #f59e0b;
   --color-error: #cf6679;
   

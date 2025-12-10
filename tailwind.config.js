@@ -9,8 +9,8 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          olive: '#768863',      // Primary Action (Light Mode)
-          teal: '#93b6b4',       // Primary Action (Dark Mode) / Accents
+          olive: '#1a6391',      // Primary Action (Light Mode)
+          teal: '#92b7b4',       // Secondary Accent
           black: '#151715',      // Dark Mode Background
           surface: '#1e221e',    // Dark Mode Card Background
           surfaceLight: '#27272a' // Dark Mode "Pulse" Card Background
