@@ -32,6 +32,17 @@ export interface Message {
     full_name: string | null
     avatar_url: string | null
   }
+  // Reply data
+  reply_to_id?: string | null
+  reply_to?: {
+    id: string
+    content: string
+    author?: {
+      id: string
+      full_name: string | null
+      avatar_url: string | null
+    }
+  } | null
 }
 
 export interface ChatMember {
@@ -111,12 +122,46 @@ export function useChat(options: UseChatOptions = {}) {
 
       if (fetchError) throw fetchError
 
-      // Transform to include role and timestamp for UI compatibility
-      const transformedMessages = (data || []).map((msg) => ({
-        ...msg,
-        role: msg.is_ai_response ? ("assistant" as const) : ("user" as const),
-        timestamp: new Date(msg.created_at),
-      }))
+      // Transform to include role, timestamp, and reply_to for UI compatibility
+      const transformedMessages = await Promise.all(
+        (data || []).map(async (msg) => {
+          const replyToId = (msg.metadata as { reply_to_id?: string })?.reply_to_id
+          let replyTo = null
+
+          if (replyToId) {
+            // Fetch the replied-to message
+            const { data: replyData } = await supabase
+              .from("messages")
+              .select(`
+                id,
+                content,
+                author:profiles!author_id (
+                  id,
+                  full_name,
+                  avatar_url
+                )
+              `)
+              .eq("id", replyToId)
+              .single()
+
+            if (replyData) {
+              replyTo = {
+                id: replyData.id,
+                content: replyData.content,
+                author: replyData.author || undefined,
+              }
+            }
+          }
+
+          return {
+            ...msg,
+            role: msg.is_ai_response ? ("assistant" as const) : ("user" as const),
+            timestamp: new Date(msg.created_at),
+            reply_to_id: replyToId || null,
+            reply_to: replyTo,
+          }
+        })
+      )
 
       setMessages(transformedMessages)
       return transformedMessages
@@ -149,15 +194,20 @@ export function useChat(options: UseChatOptions = {}) {
   }, [supabase])
 
   // Send a message
-  const sendMessage = useCallback(async (content: string, options?: { isAI?: boolean }) => {
+  const sendMessage = useCallback(async (content: string, options?: { isAI?: boolean; replyToId?: string }) => {
     if (!currentChannel || !content.trim()) return
 
-    logger.debug("Sending message:", { content, channel: currentChannel.name, isAI: options?.isAI })
+    logger.debug("Sending message:", { content, channel: currentChannel.name, isAI: options?.isAI, replyToId: options?.replyToId })
     setSending(true)
     setError(null)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
+
+      const metadata: Record<string, unknown> = {}
+      if (options?.replyToId) {
+        metadata.reply_to_id = options.replyToId
+      }
 
       const { data, error: sendError } = await supabase
         .from("messages")
@@ -166,6 +216,7 @@ export function useChat(options: UseChatOptions = {}) {
           author_id: options?.isAI ? null : user?.id,
           content: content.trim(),
           is_ai_response: options?.isAI || false,
+          metadata,
         })
         .select(`
           *,
@@ -229,11 +280,41 @@ export function useChat(options: UseChatOptions = {}) {
             }
           }
 
-          // Add role and timestamp for UI compatibility
+          // Fetch reply_to data if present
+          const replyToId = (newMessage.metadata as { reply_to_id?: string })?.reply_to_id
+          let replyTo = null
+
+          if (replyToId) {
+            const { data: replyData } = await supabase
+              .from("messages")
+              .select(`
+                id,
+                content,
+                author:profiles!author_id (
+                  id,
+                  full_name,
+                  avatar_url
+                )
+              `)
+              .eq("id", replyToId)
+              .single()
+
+            if (replyData) {
+              replyTo = {
+                id: replyData.id,
+                content: replyData.content,
+                author: replyData.author || undefined,
+              }
+            }
+          }
+
+          // Add role, timestamp, and reply_to for UI compatibility
           const transformedMessage = {
             ...newMessage,
             role: newMessage.is_ai_response ? ("assistant" as const) : ("user" as const),
             timestamp: new Date(newMessage.created_at),
+            reply_to_id: replyToId || null,
+            reply_to: replyTo,
           }
 
           logger.debug("Adding message to state:", transformedMessage)

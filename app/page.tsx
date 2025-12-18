@@ -23,6 +23,7 @@ import {
 } from "@/lib/mock-data"
 import { useChat } from "@/hooks/useChat"
 import type { Message } from "@/hooks/useChat"
+import { useNotifications } from "@/hooks/useNotifications"
 import { InviteMemberModal } from "@/components/invite-member-modal"
 import { NewDMModal } from "@/components/new-dm-modal"
 import { useUser } from "@/contexts/user-context"
@@ -74,6 +75,13 @@ export default function Home() {
   const { channels, members, messages, currentChannel, selectChannel, sendMessage, error: chatError, loading: chatLoading } = useChat({
     organizationId: organizationId || undefined,
   })
+
+  const { createNotification, requestPermission, unreadCount } = useNotifications()
+
+  // Request notification permission on mount
+  React.useEffect(() => {
+    requestPermission()
+  }, [requestPermission])
 
   const buildChatHistory = React.useCallback(() => {
     return messages.slice(-10).map((message) => ({
@@ -127,8 +135,8 @@ export default function Home() {
   }, [buildChatHistory, sendMessage])
 
   const handleSendMessage = React.useCallback(
-    async (content: string) => {
-      await sendMessage(content)
+    async (content: string, replyToId?: string) => {
+      await sendMessage(content, { replyToId })
 
       // Only call AI when explicitly mentioned
       const shouldCallAI = hasNativeMention(content)
@@ -156,6 +164,66 @@ export default function Home() {
   const handleFeedback = React.useCallback((message: Message, value: "up" | "down") => {
     logger.info("Assistant feedback", { messageId: message.id, value })
   }, [])
+
+  const handleTestNotification = React.useCallback(async () => {
+    try {
+      if (typeof window === "undefined" || typeof Notification === "undefined") {
+        logger.warn("Notifications not supported in this environment")
+        return
+      }
+
+      let perm = Notification.permission
+      if (perm !== "granted") {
+        perm = await Notification.requestPermission()
+      }
+      if (perm !== "granted") {
+        logger.warn("Notification permission not granted")
+        return
+      }
+
+      // Simple direct Notification test
+      new Notification("Native test notification", {
+        body: "If you see this, browser + OS notifications are working.",
+        icon: "/NativeLogo.png",
+        badge: "/NativeLogo.png",
+      })
+    } catch (error) {
+      logger.error("Failed to show test notification:", error)
+    }
+  }, [])
+
+  // Handle notifications for new messages
+  React.useEffect(() => {
+    if (!messages.length || !currentUserId || !organizationId) return
+
+    const lastMessage = messages[messages.length - 1]
+    if (!lastMessage || lastMessage.author_id === currentUserId) return
+
+    const createNotificationForMessage = async () => {
+      try {
+        // For now: always notify on any new message from someone else,
+        // regardless of channel / reply / mention, to make behavior obvious.
+        const type = currentChannel?.type === "direct" ? "direct" : "message"
+        const title =
+          type === "direct"
+            ? `New message from ${lastMessage.author?.full_name || "Someone"}`
+            : `${lastMessage.author?.full_name || "Someone"} in ${currentChannel?.name || "channel"}`
+
+        await createNotification(currentUserId, type, {
+          channelId: lastMessage.channel_id,
+          messageId: lastMessage.id,
+          title,
+          body: lastMessage.content.slice(0, 100),
+        })
+      } catch (error) {
+        logger.error("Failed to create notification:", error)
+      }
+    }
+
+    // Debounce to avoid duplicate notifications
+    const timer = setTimeout(createNotificationForMessage, 500)
+    return () => clearTimeout(timer)
+  }, [messages, currentUserId, currentChannel, organizationId, createNotification])
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] relative">
@@ -192,6 +260,16 @@ export default function Home() {
           onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
         />
         <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 space-y-4">
+          {/* Dev-only notification test helper */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleTestNotification}
+              className="text-[11px] px-3 py-1 rounded-full border border-[var(--color-border-subtle)] text-[var(--color-fg-secondary)] hover:bg-[var(--color-bg-subtle)] transition-colors"
+            >
+              Test desktop notification
+            </button>
+          </div>
           {chatError && (
             <ErrorMessage 
               error={chatError}

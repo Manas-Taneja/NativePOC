@@ -10,7 +10,7 @@ import { useUser } from "@/contexts/user-context"
 interface ChatStreamProps {
   messages: Message[]
   className?: string
-  onSendMessage?: (content: string) => void
+  onSendMessage?: (content: string, replyToId?: string) => void
   isNativeResponding?: boolean
   channelType?: "team" | "direct" | "ai-assistant"
   channelName?: string | null
@@ -48,6 +48,7 @@ export function ChatStream({
   const [showScrollToLatest, setShowScrollToLatest] = React.useState(false)
   const [copiedMessageId, setCopiedMessageId] = React.useState<string | null>(null)
   const [feedbackMap, setFeedbackMap] = React.useState<Record<string, "up" | "down">>({})
+  const [replyingTo, setReplyingTo] = React.useState<Message | null>(null)
 
   React.useEffect(() => {
     const wasResponding = wasRespondingRef.current
@@ -96,8 +97,9 @@ export function ChatStream({
     event.preventDefault()
     const trimmed = inputValue.trim()
     if (!trimmed) return
-    onSendMessage?.(trimmed)
+    onSendMessage?.(trimmed, replyingTo?.id)
     setInputValue("")
+    setReplyingTo(null)
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -111,8 +113,15 @@ export function ChatStream({
       event.preventDefault()
       const trimmed = inputValue.trim()
       if (!trimmed) return
-      onSendMessage?.(trimmed)
+      onSendMessage?.(trimmed, replyingTo?.id)
       setInputValue("")
+      setReplyingTo(null)
+    }
+
+    if (event.key === "Escape" && replyingTo) {
+      event.preventDefault()
+      setReplyingTo(null)
+      inputRef.current?.focus()
     }
   }
 
@@ -199,6 +208,10 @@ export function ChatStream({
         className="flex-1 overflow-y-auto overflow-x-hidden py-6 pb-4 scroll-smooth minimal-scrollbar relative"
         style={{ scrollBehavior: "smooth", contain: "layout style paint" }}
         onScroll={handleScroll}
+        role="log"
+        aria-label="Chat messages"
+        aria-live="polite"
+        aria-atomic="false"
       >
         <div className="px-5 space-y-4">
           <AnimatePresence mode="popLayout" initial={false}>
@@ -274,6 +287,8 @@ export function ChatStream({
                   "flex items-start gap-3",
                   isSelf ? "justify-end" : "justify-start"
                 )}
+                role="article"
+                aria-label={`Message from ${displayName}${message.reply_to ? ` replying to ${message.reply_to.author?.full_name || "message"}` : ""}`}
               >
                 {!isSelf && (
                   <div className="flex-shrink-0 mt-1">
@@ -298,12 +313,33 @@ export function ChatStream({
 
                   <div
                     className={cn(
-                      "rounded-lg px-4 py-3 relative",
+                      "rounded-lg px-4 py-3 relative group",
                       isSelf
                         ? "bg-[var(--color-chat-user-bg)] text-[var(--color-chat-user-text)]"
                         : "bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]"
                     )}
                   >
+                    {message.reply_to && (
+                      <div 
+                        className={cn(
+                          "mb-2 pl-3 border-l-2 rounded-sm",
+                          isSelf 
+                            ? "border-white/40 bg-white/10" 
+                            : "border-[var(--color-accent)] bg-[var(--color-accent-muted)]/20"
+                        )}
+                        role="region"
+                        aria-label={`Quoted message from ${message.reply_to.author?.full_name || "User"}`}
+                      >
+                        <p className="text-[11px] font-medium text-[var(--color-fg-secondary)] mb-1">
+                          {message.reply_to.author?.full_name || "User"}
+                        </p>
+                        <p className="text-[12px] text-[var(--color-fg-secondary)] line-clamp-2">
+                          {message.reply_to.content.length > 100 
+                            ? message.reply_to.content.slice(0, 100) + "..." 
+                            : message.reply_to.content}
+                        </p>
+                      </div>
+                    )}
                     <motion.p
                       className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words mb-1"
                       animate={{ height: "auto" }}
@@ -373,6 +409,30 @@ export function ChatStream({
                         aria-label={isCollapsed ? "Expand full answer" : "Show less"}
                       >
                         {isCollapsed ? "Expand full answer" : "Show less"}
+                      </button>
+                    )}
+
+                    {!isAssistant && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplyingTo(message)
+                          inputRef.current?.focus()
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            setReplyingTo(message)
+                            inputRef.current?.focus()
+                          }
+                        }}
+                        className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity h-6 w-6 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] focus:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 shadow-sm"
+                        aria-label={`Reply to ${displayName}`}
+                        tabIndex={0}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M6 2L2 6L6 10M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                       </button>
                     )}
                   </div>
@@ -454,6 +514,50 @@ export function ChatStream({
               )}
             </div>
           )}
+          <AnimatePresence>
+            {replyingTo && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex items-center gap-2 rounded-lg border border-[var(--color-accent-border)] bg-[var(--color-accent-muted)] px-3 py-2"
+                role="status"
+                aria-live="polite"
+                id="reply-context"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-medium text-[var(--color-accent)] mb-1">
+                    Replying to {replyingTo.author?.full_name || "User"}
+                  </p>
+                  <p className="text-[12px] text-[var(--color-fg-secondary)] truncate">
+                    {replyingTo.content.length > 60 
+                      ? replyingTo.content.slice(0, 60) + "..." 
+                      : replyingTo.content}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReplyingTo(null)
+                    inputRef.current?.focus()
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      setReplyingTo(null)
+                      inputRef.current?.focus()
+                    }
+                  }}
+                  className="h-6 w-6 rounded-full bg-[var(--color-bg-subtle)] hover:bg-[var(--color-bg-elevated)] focus:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40"
+                  aria-label="Cancel reply"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="flex items-start gap-3">
             <textarea
               ref={inputRef}
@@ -465,6 +569,7 @@ export function ChatStream({
               onKeyDown={handleKeyDown}
               onInput={resizeComposer}
               aria-label="Chat message composer"
+              aria-describedby={replyingTo ? "reply-context" : undefined}
             />
             <button
               type="submit"

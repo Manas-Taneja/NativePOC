@@ -50,3 +50,5 @@ next-env.d.ts
 
 # Codebase Index
 CODEBASE_INDEX.md
+
+.next-dev.log
