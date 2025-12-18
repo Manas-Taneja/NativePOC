@@ -300,17 +300,27 @@ export function useChat(options: UseChatOptions = {}) {
               .single()
 
             if (replyData) {
+              // Supabase may return author as an array; normalize to a single author object
+              const rawAuthor = (replyData as any).author
+              const replyAuthor = Array.isArray(rawAuthor) ? rawAuthor[0] : rawAuthor
+
               replyTo = {
-                id: replyData.id,
-                content: replyData.content,
-                author: replyData.author || undefined,
+                id: replyData.id as string,
+                content: replyData.content as string,
+                author: replyAuthor
+                  ? {
+                      id: replyAuthor.id as string,
+                      full_name: (replyAuthor.full_name ?? null) as string | null,
+                      avatar_url: (replyAuthor.avatar_url ?? null) as string | null,
+                    }
+                  : undefined,
               }
             }
           }
 
           // Add role, timestamp, and reply_to for UI compatibility
-          const transformedMessage = {
-            ...newMessage,
+          const transformedMessage: Message = {
+            ...(newMessage as Message),
             role: newMessage.is_ai_response ? ("assistant" as const) : ("user" as const),
             timestamp: new Date(newMessage.created_at),
             reply_to_id: replyToId || null,
