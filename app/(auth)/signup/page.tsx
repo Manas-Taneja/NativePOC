@@ -34,10 +34,10 @@ function SignupContent() {
             try {
                 const supabase = createClient()
                 const { data, error } = await supabase
-                    .from("invites")
+                    .from("organization_invites")
                     .select("*, organizations(name)")
-                    .eq("invite_code", inviteCode)
-                    .eq("accepted", false)
+                    .eq("token", inviteCode)
+                    .eq("status", "pending")
                     .single()
 
                 if (error || !data) {
@@ -110,9 +110,9 @@ function SignupContent() {
 
                 // 3. Mark invite as accepted
                 const { error: inviteUpdateError } = await supabase
-                    .from("invites")
-                    .update({ accepted: true, accepted_by: authData.user.id })
-                    .eq("invite_code", inviteCode)
+                    .from("organization_invites")
+                    .update({ status: "accepted" })
+                    .eq("token", inviteCode)
 
                 if (inviteUpdateError) {
                     logger.error("Invite update error:", inviteUpdateError)

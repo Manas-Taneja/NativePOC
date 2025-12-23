@@ -73,8 +73,8 @@ export async function GET(request: Request) {
     })
 
     return NextResponse.json({ items: filtered })
-  } catch (error) {
-    logger.error("Insights route error:", error)
+  } catch (err) {
+    logger.error("Insights route error:", err)
     return error(500, "SERVER_ERROR", "Internal server error")
   }
 }
@@ -128,8 +128,8 @@ export async function POST(request: Request) {
     if (sources.length > 5) return error(400, "BAD_REQUEST", "Too many sources")
 
     const safeSources = sources
-      .filter((s) => s && typeof s === "object")
-      .map((s) => ({
+      .filter((s: any) => s && typeof s === "object")
+      .map((s: any) => ({
         label: String(s.label || "").slice(0, 120),
         url: String(s.url || "").slice(0, 500),
         timestamp: String(s.timestamp || ""),
@@ -138,8 +138,8 @@ export async function POST(request: Request) {
       }))
 
     const safeActions = suggestedActions
-      .filter((a) => a && typeof a === "object")
-      .map((a, idx) => ({
+      .filter((a: any) => a && typeof a === "object")
+      .map((a: any, idx: number) => ({
         id: String(a.id || `action-${idx}`),
         label: String(a.label || "").slice(0, 140),
         intent: a.intent === "primary" || a.intent === "ghost" ? a.intent : "secondary",

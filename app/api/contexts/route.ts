@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     if (title.length > MAX_TITLE_LEN) return error(400, "BAD_REQUEST", "Title too long")
     if (content.length > MAX_CONTENT_LEN) return error(400, "BAD_REQUEST", "Content too long")
     if (tags.length > MAX_TAGS) return error(400, "BAD_REQUEST", "Too many tags")
-    if (tags.some((t) => typeof t !== "string" || t.length > MAX_TAG_LEN)) {
+    if (tags.some((t: any) => typeof t !== "string" || t.length > MAX_TAG_LEN)) {
       return error(400, "BAD_REQUEST", "Invalid tags")
     }
 

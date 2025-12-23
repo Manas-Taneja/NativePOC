@@ -8,7 +8,7 @@ type InviteRequest = {
   organizationId: string
 }
 
-async function sendEmailInvite(recipient: string, inviteLink: string) {
+async function sendEmailInvite(recipient: string, inviteLink: string, htmlBody?: string) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
     logger.warn("RESEND_API_KEY not configured; skipping email send", { recipient })
@@ -19,7 +19,7 @@ async function sendEmailInvite(recipient: string, inviteLink: string) {
     from: "Native <noreply@native.app>",
     to: [recipient],
     subject: "You’re invited to Native",
-    html: `<p>You’ve been invited to join Native.</p><p><a href="${inviteLink}">Accept invite</a></p>`,
+    html: htmlBody || `<p>You’ve been invited to join Native.</p><p><a href="${inviteLink}">Accept invite</a></p>`,
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -99,11 +99,11 @@ export async function POST(request: Request) {
     for (const inviteEmail of inviteList) {
       const inviteCode = crypto.randomUUID()
       const { error: inviteError } = await supabase
-        .from("invites")
+        .from("organization_invites")
         .insert({
           organization_id: organizationId,
           email: inviteEmail,
-          invite_code: inviteCode,
+          token: inviteCode,
           invited_by: user.id,
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
         })
@@ -118,7 +118,20 @@ export async function POST(request: Request) {
       results.push({ email: inviteEmail, inviteLink })
 
       // Fire-and-forget email send
-      void sendEmailInvite(inviteEmail, inviteLink)
+      const prettyHtml = `
+      <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h1 style="color: #000; font-size: 24px; font-weight: 600;">Use Native</h1>
+        </div>
+        <div style="background: #f9f9f9; padding: 32px; border-radius: 12px; text-align: center;">
+          <p style="font-size: 16px; margin-bottom: 24px;">You have been invited to join <strong>Native</strong>.</p>
+          <a href="${inviteLink}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; font-size: 16px;">Accept Invite</a>
+          <p style="margin-top: 24px; font-size: 14px; color: #666;">or copy this link: <br/><a href="${inviteLink}" style="color: #666;">${inviteLink}</a></p>
+        </div>
+      </div>
+      `
+
+      void sendEmailInvite(inviteEmail, inviteLink, prettyHtml)
     }
 
     const failed = results.filter((r) => r.error)
