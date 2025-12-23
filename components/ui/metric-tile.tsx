@@ -10,6 +10,7 @@ export interface MetricTileProps {
   trend?: {
     direction: "up" | "down"
     percentage: number
+    showPercentage?: boolean
   }
   className?: string
 }
@@ -65,16 +66,18 @@ export function MetricTile({ label, value, trend, className }: MetricTileProps) 
             </svg>
             
             {/* Percentage */}
-            <span
-              className={cn(
-                "text-sm font-medium tabular-nums font-ui",
-                trend.direction === "up"
-                  ? "text-[var(--color-success)]"
-                  : "text-[var(--color-error)]"
-              )}
-            >
-              {trend.percentage}%
-            </span>
+            {trend.showPercentage !== false && (
+              <span
+                className={cn(
+                  "text-sm font-medium tabular-nums font-ui",
+                  trend.direction === "up"
+                    ? "text-[var(--color-success)]"
+                    : "text-[var(--color-error)]"
+                )}
+              >
+                {trend.percentage}%
+              </span>
+            )}
           </div>
         )}
       </div>

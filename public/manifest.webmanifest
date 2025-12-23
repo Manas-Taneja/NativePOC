@@ -1,0 +1,23 @@
+{
+  "name": "Native",
+  "short_name": "Native",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a6391",
+  "icons": [
+    {
+      "src": "/NativeLogo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/NativeLogo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+
+
+

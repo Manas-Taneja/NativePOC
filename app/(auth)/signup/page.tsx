@@ -20,6 +20,8 @@ function SignupContent() {
     const [inviteData, setInviteData] = React.useState<any>(null)
     const [loadingInvite, setLoadingInvite] = React.useState(false)
     const [inviteError, setInviteError] = React.useState<string | null>(null)
+    const [inviteEmails, setInviteEmails] = React.useState<string[]>(["", "", "", "", ""])
+    const [inviteStatus, setInviteStatus] = React.useState<string | null>(null)
 
     const { signUp, loading, error } = useAuth()
 
@@ -125,7 +127,30 @@ function SignupContent() {
         } else {
             // Normal signup - create new organization
             try {
-                await signUp(email, password, fullName, orgName)
+                const result = await signUp(email, password, fullName, orgName)
+                const trimmed = inviteEmails.map((v) => v.trim()).filter(Boolean).slice(0, 5)
+                if (result?.organization?.id && trimmed.length) {
+                    try {
+                        const resp = await fetch("/api/invite", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                emails: trimmed,
+                                organizationId: result.organization.id,
+                            }),
+                        })
+                        if (!resp.ok) {
+                            const errJson = await resp.json().catch(() => ({}))
+                            setInviteStatus(errJson?.error ?? "Failed to send invites")
+                        } else {
+                            setInviteStatus(`Sent ${trimmed.length} invite(s)`)
+                        }
+                    } catch (error) {
+                        logger.error("Invite send failed:", error)
+                        setInviteStatus("Failed to send invites")
+                    }
+                }
+                router.push("/")
             } catch (err) {
                 // Error is handled by useAuth hook
             }
@@ -215,6 +240,34 @@ function SignupContent() {
                             </p>
                         )}
                     </div>
+
+                    {!inviteData && (
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-[var(--color-fg-secondary)]">
+                                    Invite up to 5 teammates (emails)
+                                </label>
+                                <span className="text-xs text-[var(--color-fg-tertiary)]">Optional</span>
+                            </div>
+                            {inviteEmails.map((value, idx) => (
+                                <input
+                                    key={idx}
+                                    type="email"
+                                    value={value}
+                                    onChange={(e) => {
+                                        const next = [...inviteEmails]
+                                        next[idx] = e.target.value
+                                        setInviteEmails(next)
+                                    }}
+                                    placeholder={`teammate${idx + 1}@example.com`}
+                                    className="w-full px-4 py-2 bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-lg text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
+                                />
+                            ))}
+                            {inviteStatus && (
+                                <p className="text-xs text-[var(--color-fg-tertiary)]">{inviteStatus}</p>
+                            )}
+                        </div>
+                    )}
 
                     <div>
                         <label

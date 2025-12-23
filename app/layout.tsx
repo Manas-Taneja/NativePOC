@@ -5,6 +5,7 @@ import "@native/ui/styles";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserProvider } from "@/contexts/user-context";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 
 const barlow = Barlow({
   weight: ["400", "500", "600"],
@@ -35,6 +36,7 @@ export default function RootLayout({
           <ThemeProvider>
             <UserProvider>
               {children}
+              <ServiceWorkerRegister />
             </UserProvider>
           </ThemeProvider>
         </ErrorBoundary>

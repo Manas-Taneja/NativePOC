@@ -85,7 +85,6 @@ export function useAuth() {
                 // Don't throw - channel creation is not critical for signup
             }
 
-            router.push("/")
             return { user: authData.user, organization: orgData }
         } catch (e) {
             const message = e instanceof Error ? e.message : "Signup failed"

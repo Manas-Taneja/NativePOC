@@ -88,14 +88,16 @@ All handlers live under `app/api` and mirror the Nuxt server endpoints:
 Create `.env.local` in the `NativePOC` directory with:
 
 ```
-OPENAI_API_KEY=sk-your-key
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+GEMINI_API_KEY=your-gemini-key              # /api/chat
+RESEND_API_KEY=your-resend-key              # onboarding invites (optional in dev)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=base64key      # web push (optional)
 ```
 
-**Note:** If you're migrating from NativeIQ, the code also supports the old variable names (`SUPABASE_URL` and `SUPABASE_KEY`) for compatibility. You can copy your `.env` file from NativeIQ and it will work.
+**Note:** Legacy variable names (`SUPABASE_URL`, `SUPABASE_KEY`) are still supported for compatibility. Restart `npm run dev` after updating env vars.
 
-The Supabase keys enable realtime chat channels; the OpenAI key powers `/api/chat` and the assistant responses. Restart `npm run dev` after updating env vars.
+Supabase keys enable auth + realtime; the Gemini key powers `/api/chat`. Resend/VAPID are optional but recommended for invite emails and push notifications.
 
 ## 🎨 Design System
 
