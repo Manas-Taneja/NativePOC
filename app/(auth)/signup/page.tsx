@@ -28,7 +28,40 @@ function SignupContent() {
 
     const { signUp, loading, error } = useAuth()
 
-    // ... existing checkInvite useEffect ...
+    React.useEffect(() => {
+        const checkInvite = async () => {
+            if (!inviteCode) return
+
+            setLoadingInvite(true)
+            const supabase = createClient()
+
+            try {
+                const { data, error } = await supabase
+                    .from("invites")
+                    .select("*, organizations(id, name)")
+                    .eq("invite_code", inviteCode)
+                    .single()
+
+                if (error) {
+                    logger.error("Error fetching invite:", error)
+                    setInviteError("Invalid or expired invite code")
+                    return
+                }
+
+                if (data) {
+                    setInviteData(data)
+                    setEmail(data.email)
+                }
+            } catch (err) {
+                logger.error("Invite check failed:", err)
+                setInviteError("Failed to validate invite")
+            } finally {
+                setLoadingInvite(false)
+            }
+        }
+
+        checkInvite()
+    }, [inviteCode])
 
     // Handle initial signup (Step 1)
     const handleSignupSubmit = async (e: React.FormEvent) => {
