@@ -22,48 +22,16 @@ function SignupContent() {
     const [inviteError, setInviteError] = React.useState<string | null>(null)
     const [inviteEmails, setInviteEmails] = React.useState<string[]>(["", "", "", "", ""])
     const [inviteStatus, setInviteStatus] = React.useState<string | null>(null)
+    const [step, setStep] = React.useState<"signup" | "invite">("signup")
+    const [createdOrgId, setCreatedOrgId] = React.useState<string | null>(null)
+    const [inviteRoles, setInviteRoles] = React.useState<string[]>(["Member", "Member", "Member", "Member", "Member"])
 
     const { signUp, loading, error } = useAuth()
 
-    // Check invite code on mount
-    React.useEffect(() => {
-        async function checkInvite() {
-            if (!inviteCode) return
+    // ... existing checkInvite useEffect ...
 
-            setLoadingInvite(true)
-            try {
-                const supabase = createClient()
-                const { data, error } = await supabase
-                    .from("organization_invites")
-                    .select("*, organizations(name)")
-                    .eq("token", inviteCode)
-                    .eq("status", "pending")
-                    .single()
-
-                if (error || !data) {
-                    logger.error("Invalid invite code")
-                    return
-                }
-
-                // Check if expired
-                if (new Date(data.expires_at) < new Date()) {
-                    logger.error("Invite expired")
-                    return
-                }
-
-                setInviteData(data)
-                setEmail(data.email)
-            } catch (err) {
-                logger.error("Error checking invite:", err)
-            } finally {
-                setLoadingInvite(false)
-            }
-        }
-
-        void checkInvite()
-    }, [inviteCode])
-
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Handle initial signup (Step 1)
+    const handleSignupSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         if (inviteData) {
@@ -75,49 +43,23 @@ function SignupContent() {
                 const { data: authData, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
-                    options: {
-                        data: {
-                            full_name: fullName,
-                        },
-                    },
+                    options: { data: { full_name: fullName } },
                 })
+                if (signUpError) { setInviteError(signUpError.message); return }
+                if (!authData.user) { setInviteError("User creation failed"); return }
 
-                if (signUpError) {
-                    logger.error("Auth signup error:", signUpError)
-                    setInviteError(signUpError.message)
-                    return
-                }
-                if (!authData.user) {
-                    setInviteError("User creation failed")
-                    return
-                }
-
-                // 2. Update profile with invite's organization (profile may already exist from trigger)
-                const { error: profileError } = await supabase
-                    .from("profiles")
-                    .upsert({
-                        id: authData.user.id,
-                        organization_id: inviteData.organization_id,
-                        full_name: fullName,
-                        role: "member",
-                    })
-
-                if (profileError) {
-                    logger.error("Profile update error:", profileError)
-                    setInviteError("Failed to update profile: " + profileError.message)
-                    return
-                }
+                // 2. Update profile with invite's organization
+                const { error: profileError } = await supabase.from("profiles").upsert({
+                    id: authData.user.id,
+                    organization_id: inviteData.organization_id,
+                    full_name: fullName,
+                    role: inviteData.role || "member", // Use invited role
+                })
+                if (profileError) { setInviteError("Failed to update profile: " + profileError.message); return }
 
                 // 3. Mark invite as accepted
-                const { error: inviteUpdateError } = await supabase
-                    .from("organization_invites")
-                    .update({ status: "accepted" })
-                    .eq("token", inviteCode)
-
-                if (inviteUpdateError) {
-                    logger.error("Invite update error:", inviteUpdateError)
-                    // Don't fail if this doesn't work
-                }
+                const { error: inviteUpdateError } = await supabase.from("invites").update({ status: "accepted" }).eq("invite_code", inviteCode)
+                if (inviteUpdateError) logger.error("Invite update error:", inviteUpdateError)
 
                 router.push("/")
             } catch (err) {
@@ -125,36 +67,151 @@ function SignupContent() {
                 setInviteError(err instanceof Error ? err.message : "Signup failed")
             }
         } else {
-            // Normal signup - create new organization
+            // New Org Signup
             try {
                 const result = await signUp(email, password, fullName, orgName)
-                const trimmed = inviteEmails.map((v) => v.trim()).filter(Boolean).slice(0, 5)
-                if (result?.organization?.id && trimmed.length) {
-                    try {
-                        const resp = await fetch("/api/invite", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                emails: trimmed,
-                                organizationId: result.organization.id,
-                            }),
-                        })
-                        if (!resp.ok) {
-                            const errJson = await resp.json().catch(() => ({}))
-                            setInviteStatus(errJson?.error ?? "Failed to send invites")
-                        } else {
-                            setInviteStatus(`Sent ${trimmed.length} invite(s)`)
-                        }
-                    } catch (error) {
-                        logger.error("Invite send failed:", error)
-                        setInviteStatus("Failed to send invites")
-                    }
+                if (result?.organization?.id) {
+                    setCreatedOrgId(result.organization.id)
+                    setStep("invite") // Move to step 2
                 }
-                router.push("/")
             } catch (err) {
-                // Error is handled by useAuth hook
+                // Error handled by useAuth
             }
         }
+    }
+
+    // Handle Invites (Step 2)
+    const handleInviteSubmit = async () => {
+        // Collect valid emails and their corresponding roles
+        const invitesToSend = inviteEmails.map((email, idx) => ({
+            email: email.trim(),
+            role: inviteRoles[idx]
+        })).filter(i => i.email)
+
+        if (!createdOrgId || !invitesToSend.length) {
+            router.push("/")
+            return
+        }
+
+        setLoadingInvite(true)
+        try {
+            // Send one by one or modify API to accept batch with roles? 
+            // Current API takes `emails: string[]`. I need to change API or loop here.
+            // Let's loop here for simplicity as API change for batch roles might be complex unless I change API to accept `invites: {email, role}[]`
+            // Actually, `app/api/invite/route.ts` takes `email` (single) or `emails` (array). 
+            // If I want distinct roles, I should probably just pick ONE role for all, or loop.
+            // The prompt implies "assign roles", likely meaning "admin or member".
+            // Let's assume for this bulk step, they are adding "Teammates", likely MEMBERS.
+            // BUT user said "assign roles".
+            // Let's just modify the UI to allow role selection and loop the API calls or update API.
+            // Since API now takes `role`, but applies to ALL `emails`.
+            // So I can't mix roles in one batch if I use `emails`.
+            // Strategy: Group by role?
+            // "emails" list is mapped to `role`.
+
+            // Allow simplified "Default Role" for the batch, OR simple map.
+            // Let's just iterate and call API for each unique email+role pair.
+
+            const results = await Promise.all(invitesToSend.map(invite =>
+                fetch("/api/invite", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: invite.email,
+                        role: invite.role,
+                        organizationId: createdOrgId,
+                    }),
+                }).then(res => res.json())
+            ))
+
+            // Check results
+            const failed = results.filter(r => r.error)
+            if (failed.length) {
+                setInviteStatus(`Some invites failed. ${results.length - failed.length} sent.`)
+                setLoadingInvite(false)
+            } else {
+                setInviteStatus(`Sent ${results.length} invite(s)`)
+                router.push("/")
+            }
+        } catch (error) {
+            logger.error("Invite send failed:", error)
+            setInviteStatus("Failed to send invites")
+            setLoadingInvite(false)
+        }
+    }
+
+    if (step === "invite") {
+        return (
+            <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center p-4">
+                <Card className="w-full max-w-md p-8 text-center">
+                    <div className="mb-6">
+                        <div className="mx-auto h-12 w-12 bg-[var(--color-accent)]/10 rounded-full flex items-center justify-center mb-4">
+                            <span className="text-2xl">👋</span>
+                        </div>
+                        <h1 className="text-2xl font-bold text-[var(--color-fg-primary)] mb-2">
+                            Invite your team
+                        </h1>
+                        <p className="text-[var(--color-fg-tertiary)]">
+                            Work is better together. Invite your colleagues to <strong>{orgName}</strong>.
+                        </p>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                        {inviteEmails.map((value, idx) => (
+                            <div key={idx} className="flex gap-2">
+                                <input
+                                    type="email"
+                                    value={value}
+                                    onChange={(e) => {
+                                        const next = [...inviteEmails]
+                                        next[idx] = e.target.value
+                                        setInviteEmails(next)
+                                    }}
+                                    placeholder={`colleague${idx + 1}@example.com`}
+                                    className="flex-1 px-4 py-2 bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-lg text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
+                                />
+                                <input
+                                    value={inviteRoles[idx]}
+                                    onChange={(e) => {
+                                        const next = [...inviteRoles]
+                                        const val = e.target.value
+                                        next[idx] = val.length > 0 ? val.charAt(0).toUpperCase() + val.slice(1) : ""
+                                        setInviteRoles(next)
+                                    }}
+                                    placeholder="Role"
+                                    className="w-32 px-4 py-2 bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-lg text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* ... rest of invite UI ... */}
+
+                    {inviteStatus && (
+                        <p className={`text-sm mb-4 ${inviteStatus.includes("Failed") ? "text-red-500" : "text-green-500"}`}>
+                            {inviteStatus}
+                        </p>
+                    )}
+
+                    <div className="space-y-3">
+                        <button
+                            onClick={handleInviteSubmit}
+                            disabled={loadingInvite}
+                            className="w-full py-3 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                        >
+                            {loadingInvite ? "Sending invites..." : "Send Invites"}
+                        </button>
+                        <button
+                            onClick={() => router.push("/")}
+                            disabled={loadingInvite}
+                            className="w-full py-3 bg-transparent text-[var(--color-fg-secondary)] rounded-lg font-medium hover:text-[var(--color-fg-primary)] transition-colors"
+                        >
+                            Skip for now
+                        </button>
+                    </div>
+                </Card>
+            </div>
+        )
     }
 
     return (
@@ -178,7 +235,7 @@ function SignupContent() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSignupSubmit} className="space-y-4">
                     <div>
                         <label
                             htmlFor="fullName"
@@ -241,34 +298,6 @@ function SignupContent() {
                         )}
                     </div>
 
-                    {!inviteData && (
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-[var(--color-fg-secondary)]">
-                                    Invite up to 5 teammates (emails)
-                                </label>
-                                <span className="text-xs text-[var(--color-fg-tertiary)]">Optional</span>
-                            </div>
-                            {inviteEmails.map((value, idx) => (
-                                <input
-                                    key={idx}
-                                    type="email"
-                                    value={value}
-                                    onChange={(e) => {
-                                        const next = [...inviteEmails]
-                                        next[idx] = e.target.value
-                                        setInviteEmails(next)
-                                    }}
-                                    placeholder={`teammate${idx + 1}@example.com`}
-                                    className="w-full px-4 py-2 bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-lg text-[var(--color-fg-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
-                                />
-                            ))}
-                            {inviteStatus && (
-                                <p className="text-xs text-[var(--color-fg-tertiary)]">{inviteStatus}</p>
-                            )}
-                        </div>
-                    )}
-
                     <div>
                         <label
                             htmlFor="password"
@@ -302,7 +331,7 @@ function SignupContent() {
                         disabled={loading}
                         className="w-full py-3 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? "Creating account..." : "Create Account"}
+                        {loading ? "Creating account..." : (inviteData ? "Join Team" : "Create Account")}
                     </button>
                 </form>
 

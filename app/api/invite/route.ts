@@ -6,6 +6,7 @@ type InviteRequest = {
   email?: string
   emails?: string[]
   organizationId: string
+  role?: string
 }
 
 async function sendEmailInvite(recipient: string, inviteLink: string, htmlBody?: string) {
@@ -16,7 +17,7 @@ async function sendEmailInvite(recipient: string, inviteLink: string, htmlBody?:
   }
 
   const payload = {
-    from: "Native <noreply@native.app>",
+    from: process.env.RESEND_FROM || "Native <onboarding@resend.dev>",
     to: [recipient],
     subject: "You’re invited to Native",
     html: htmlBody || `<p>You’ve been invited to join Native.</p><p><a href="${inviteLink}">Accept invite</a></p>`,
@@ -85,9 +86,10 @@ export async function POST(request: Request) {
     if (!baseUrl) {
       const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
       if (vercelUrl) {
-        baseUrl = `https://${vercelUrl}`
+        baseUrl = vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`
       } else {
         const host = request.headers.get("host")
+        // If host includes localhost, force http, otherwise https
         const protocol = host?.includes("localhost") ? "http" : "https"
         baseUrl = host ? `${protocol}://${host}` : "http://localhost:3000"
       }
@@ -97,14 +99,29 @@ export async function POST(request: Request) {
     const results: Array<{ email: string; inviteLink?: string; error?: string }> = []
 
     for (const inviteEmail of inviteList) {
+      // Check for recent invites (rate limit: 1 per 24h)
+      const { data: existingInvite } = await supabase
+        .from("invites")
+        .select("created_at")
+        .eq("organization_id", organizationId)
+        .eq("email", inviteEmail)
+        .gt("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .single()
+
+      if (existingInvite) {
+        results.push({ email: inviteEmail, error: "Invite already sent in the last 24 hours" })
+        continue
+      }
+
       const inviteCode = crypto.randomUUID()
       const { error: inviteError } = await supabase
-        .from("organization_invites")
+        .from("invites")
         .insert({
           organization_id: organizationId,
           email: inviteEmail,
-          token: inviteCode,
+          invite_code: inviteCode,
           invited_by: user.id,
+          role: body.role || 'member',
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
         })
 
@@ -138,9 +155,11 @@ export async function POST(request: Request) {
     const successCount = results.length - failed.length
 
     if (failed.length === results.length) {
+      // If single invite failed, show the specific error
+      const specificError = failed.length === 1 ? failed[0].error : "Failed to create invites"
       return NextResponse.json(
         {
-          error: "Failed to create invites",
+          error: specificError,
           details: failed,
         },
         { status: 500 },
