@@ -72,37 +72,45 @@ export function InviteMemberModal({ isOpen, onClose, organizationId }: InviteMem
         setInviteLink(null)
 
         try {
+            console.log("Sending invite...", { email, role, organizationId })
             const response = await fetch("/api/invite", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, role, organizationId }),
             })
 
-            const data = await response.json()
+            let data
+            try {
+                data = await response.json()
+            } catch (jsonError) {
+                console.error("Failed to parse response JSON", jsonError)
+                throw new Error("Server returned an invalid response. Please try again.")
+            }
 
             if (!response.ok) {
+                console.error("Invite failed", data)
                 if (data.requiresManual) {
                     setError(data.error + "\n\nSQL to run:\n" + data.sql)
                 } else {
                     setError(data.error || "Failed to create invite")
                 }
-                setLoading(false)
                 return
             }
 
+            console.log("Invite success", data)
             setInviteLink(data.inviteLink)
             setSuccess(true)
 
-            // Auto close after success? Or let them copy link?
-            // Existing logic has "Done" button or auto-close?
-            // The logic I replaced had a success state with a checkmark.
-            // Let's stick to the success message.
             setTimeout(() => {
                 onClose()
             }, 2000)
 
         } catch (err) {
+            console.error("Invite error", err)
             setError(err instanceof Error ? err.message : "Failed to invite member")
+        } finally {
+            // Only unset loading if we didn't succeed (if we succeeded, we switched views)
+            // Actually, unsetting it is fine either way.
             setLoading(false)
         }
     }
