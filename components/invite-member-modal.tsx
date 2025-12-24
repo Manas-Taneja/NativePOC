@@ -4,7 +4,7 @@ import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
+
 
 interface InviteMemberModalProps {
     isOpen: boolean
