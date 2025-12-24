@@ -127,6 +127,30 @@ export async function POST(request: Request) {
 
       if (inviteError) {
         logger.error("Invite error:", inviteError)
+        // Check for specific DB errors to help debugging in production
+        if (inviteError.message.includes('column "role" of relation "invites" does not exist')) {
+          results.push({
+            email: inviteEmail,
+            error: `Database Schema Error: The 'role' column is missing.`,
+            // We'll catch this "requiresManual" flag in the UI to show the SQL fix
+          })
+          // Hack: throw to stop execution and return this specific error structure
+          // But here we are in a loop. We should likely just return a special error for the whole batch if one fails this hard.
+          return NextResponse.json({
+            error: "Database Schema Error: Missing 'role' column.",
+            requiresManual: true,
+            sql: `DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'invites' AND column_name = 'role') THEN
+        ALTER TABLE invites ADD COLUMN role TEXT NOT NULL DEFAULT 'Member';
+    END IF;
+    ALTER TABLE invites DROP CONSTRAINT IF EXISTS invites_role_check;
+    ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+    ALTER TABLE invites ALTER COLUMN role SET DEFAULT 'Member';
+    ALTER TABLE profiles ALTER COLUMN role SET DEFAULT 'Member';
+END $$;`
+          }, { status: 500 })
+        }
         results.push({ email: inviteEmail, error: inviteError.message })
         continue
       }
