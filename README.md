@@ -91,13 +91,17 @@ Create `.env.local` in the `NativePOC` directory with:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 GEMINI_API_KEY=your-gemini-key              # /api/chat
-RESEND_API_KEY=your-resend-key              # onboarding invites (optional in dev)
+# SMTP Configuration (for invites)
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_HOST=smtp.gmail.com                    # Optional (defaults to 465)
+SMTP_PORT=465                               # Optional (defaults to 465)
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=base64key      # web push (optional)
 ```
 
 **Note:** Legacy variable names (`SUPABASE_URL`, `SUPABASE_KEY`) are still supported for compatibility. Restart `npm run dev` after updating env vars.
 
-Supabase keys enable auth + realtime; the Gemini key powers `/api/chat`. Resend/VAPID are optional but recommended for invite emails and push notifications.
+Supabase keys enable auth + realtime; the Gemini key powers `/api/chat`. SMTP settings are required for sending invite emails.
 
 ## 🎨 Design System
 

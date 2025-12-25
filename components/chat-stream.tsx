@@ -215,264 +215,273 @@ export function ChatStream({
       >
         <div className="px-5 space-y-4">
           <AnimatePresence mode="popLayout" initial={false}>
-          {messages.length === 0 && (
-            <motion.div
-              layout
-              className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-6 text-[var(--color-fg-secondary)] space-y-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center font-semibold">
-                  {channelType === "direct" ? "DM" : "Team"}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--color-fg-primary)]">
-                    {channelType === "team"
-                      ? "Say hi to the team; @native when you want AI."
-                      : "Start a direct message; @native to invite AI."}
-                  </p>
-                  <p className="text-xs text-[var(--color-fg-tertiary)]">
-                    {channelName ? `Channel: ${channelName}` : "No history yet."}
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
-                  <p className="font-semibold text-[var(--color-fg-primary)]">Try</p>
-                  <p className="text-[var(--color-fg-secondary)] mt-1">
-                    {channelType === "team" ? "“@native summarize this thread”" : "“@native summarize today’s alerts”"}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
-                  <p className="font-semibold text-[var(--color-fg-primary)]">Shortcuts</p>
-                  <p className="text-[var(--color-fg-secondary)] mt-1">Enter send · Shift+Enter newline · Cmd/Ctrl+K focus</p>
-                </div>
-                <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
-                  <p className="font-semibold text-[var(--color-fg-primary)]">Visibility</p>
-                  <p className="text-[var(--color-fg-secondary)] mt-1">
-                    {channelType === "direct" ? "Only participants see messages." : "Visible to everyone in this channel."}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-          {messages.map((message) => {
-            const isCollapsed = collapsedMessages.has(message.id)
-            const isAssistant = message.role === "assistant"
-            // Check if this message is from the current user by comparing author_id
-            const isSelf = message.author_id === currentUserId
-            const shouldShowCollapse = isAssistant && message.content.length > 200
-            const content = isCollapsed && shouldShowCollapse
-              ? message.content.slice(0, 150) + "..."
-              : message.content
-
-            const isNewest = message.id === newestMessageId && !allowAnimation
-            // Check if this is the first assistant message that just replaced the loading state
-            const justReplacedLoading = isAssistant && message.id === justReplacedMessageId
-
-            // Get display name
-            const displayName = isAssistant
-              ? "Native"
-              : message.author?.full_name || "User"
-
-            return (
+            {messages.length === 0 && (
               <motion.div
-                key={message.id}
-                layoutId={justReplacedLoading ? "native-message" : undefined}
-                variants={chatMessageFadeIn}
-                initial={isNewest ? false : "initial"}
-                animate={isNewest ? false : "animate"}
-                exit="exit"
-                style={isNewest ? { transform: 'none' } : undefined}
-                className={cn(
-                  "flex items-start gap-3",
-                  isSelf ? "justify-end" : "justify-start"
-                )}
-                role="article"
-                aria-label={`Message from ${displayName}${message.reply_to ? ` replying to ${message.reply_to.author?.full_name || "message"}` : ""}`}
+                layout
+                className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-6 text-[var(--color-fg-secondary)] space-y-3"
               >
-                {!isSelf && (
-                  <div className="flex-shrink-0 mt-1">
-                    {isAssistant ? (
-                      <div className="h-8 w-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
-                        <span className="text-white font-bold text-xs">N</span>
-                      </div>
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-[var(--color-avatar-bg)] flex items-center justify-center">
-                        <span className="text-[var(--color-avatar-text)] font-medium text-xs">
-                          {displayName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center font-semibold">
+                    {channelType === "direct" ? "DM" : "Team"}
                   </div>
-                )}
-
-                <div className={cn("flex flex-col gap-1 max-w-[70%]", isSelf && "items-end text-right")}>
-                  <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1">
-                    {displayName}
-                  </span>
-
-                  <div
-                    className={cn(
-                      "rounded-lg px-4 py-3 relative group",
-                      isSelf
-                        ? "bg-[var(--color-chat-user-bg)] text-[var(--color-chat-user-text)]"
-                        : "bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]"
-                    )}
-                  >
-                    {message.reply_to && (
-                      <div 
-                        className={cn(
-                          "mb-2 pl-3 border-l-2 rounded-sm",
-                          isSelf 
-                            ? "border-white/40 bg-white/10" 
-                            : "border-[var(--color-accent)] bg-[var(--color-accent-muted)]/20"
-                        )}
-                        role="region"
-                        aria-label={`Quoted message from ${message.reply_to.author?.full_name || "User"}`}
-                      >
-                        <p className="text-[11px] font-medium text-[var(--color-fg-secondary)] mb-1">
-                          {message.reply_to.author?.full_name || "User"}
-                        </p>
-                        <p className="text-[12px] text-[var(--color-fg-secondary)] line-clamp-2">
-                          {message.reply_to.content.length > 100 
-                            ? message.reply_to.content.slice(0, 100) + "..." 
-                            : message.reply_to.content}
-                        </p>
-                      </div>
-                    )}
-                    <motion.p
-                      className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words mb-1"
-                      animate={{ height: "auto" }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {content}
-                    </motion.p>
-
-                    <p
-                      className="text-[11px] text-white/70"
-                      suppressHydrationWarning
-                    >
-                      {formatRelativeTime(message.timestamp)}
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--color-fg-primary)]">
+                      {channelType === "team"
+                        ? "Say hi to the team; @native when you want AI."
+                        : "Start a direct message; @native to invite AI."}
                     </p>
-
-                    {isAssistant && (
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-[var(--color-fg-secondary)]">
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(message)}
-                          className="rounded-md px-2 py-1 bg-[var(--color-bg-subtle)] hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-colors"
-                        >
-                          {copiedMessageId === message.id ? "Copied" : "Copy"}
-                        </button>
-                        {onRegenerate && (
-                          <button
-                            type="button"
-                            onClick={() => onRegenerate(message)}
-                            className="rounded-md px-2 py-1 bg-[var(--color-accent-muted)] text-[var(--color-accent)] border border-[var(--color-accent-border)] hover:bg-[var(--color-accent-muted)]/70 transition-colors"
-                          >
-                            Regenerate
-                          </button>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            aria-pressed={feedbackMap[message.id] === "up"}
-                            onClick={() => handleFeedbackClick(message, "up")}
-                            className={cn(
-                              "h-7 w-7 rounded-full border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] transition-colors",
-                              feedbackMap[message.id] === "up" && "bg-[var(--color-accent-muted)] text-[var(--color-accent)] border-[var(--color-accent-border)]"
-                            )}
-                            aria-label="Thumbs up"
-                          >
-                            👍
-                          </button>
-                          <button
-                            type="button"
-                            aria-pressed={feedbackMap[message.id] === "down"}
-                            onClick={() => handleFeedbackClick(message, "down")}
-                            className={cn(
-                              "h-7 w-7 rounded-full border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] transition-colors",
-                              feedbackMap[message.id] === "down" && "bg-[var(--color-accent-muted)] text-[var(--color-accent)] border-[var(--color-accent-border)]"
-                            )}
-                            aria-label="Thumbs down"
-                          >
-                            👎
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {shouldShowCollapse && (
-                      <button
-                        onClick={() => toggleMessageCollapse(message.id)}
-                        className="mt-2 flex items-center justify-center w-full text-[11px] text-[var(--color-fg-tertiary)] hover:text-[var(--color-fg-secondary)] transition-colors"
-                        aria-label={isCollapsed ? "Expand full answer" : "Show less"}
-                      >
-                        {isCollapsed ? "Expand full answer" : "Show less"}
-                      </button>
-                    )}
-
-                    {!isAssistant && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReplyingTo(message)
-                          inputRef.current?.focus()
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault()
-                            setReplyingTo(message)
-                            inputRef.current?.focus()
-                          }
-                        }}
-                        className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity h-6 w-6 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] focus:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 shadow-sm"
-                        aria-label={`Reply to ${displayName}`}
-                        tabIndex={0}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                          <path d="M6 2L2 6L6 10M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </button>
-                    )}
+                    <p className="text-xs text-[var(--color-fg-tertiary)]">
+                      {channelName ? `Channel: ${channelName}` : "No history yet."}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
+                    <p className="font-semibold text-[var(--color-fg-primary)]">Try</p>
+                    <p className="text-[var(--color-fg-secondary)] mt-1">
+                      {channelType === "team" ? "“@native summarize this thread”" : "“@native summarize today’s alerts”"}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
+                    <p className="font-semibold text-[var(--color-fg-primary)]">Shortcuts</p>
+                    <p className="text-[var(--color-fg-secondary)] mt-1">Enter send · Shift+Enter newline · Cmd/Ctrl+K focus</p>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-[var(--color-border-subtle)] px-3 py-2 bg-[var(--color-bg-subtle)]/60">
+                    <p className="font-semibold text-[var(--color-fg-primary)]">Visibility</p>
+                    <p className="text-[var(--color-fg-secondary)] mt-1">
+                      {channelType === "direct" ? "Only participants see messages." : "Visible to everyone in this channel."}
+                    </p>
                   </div>
                 </div>
               </motion.div>
-            )
-          })}
+            )}
+            {messages.map((message) => {
+              const isCollapsed = collapsedMessages.has(message.id)
+              const isAssistant = message.role === "assistant"
+              // Check if this message is from the current user by comparing author_id
+              const isSelf = message.author_id === currentUserId
+              const shouldShowCollapse = isAssistant && message.content.length > 200
+              const content = isCollapsed && shouldShowCollapse
+                ? message.content.slice(0, 150) + "..."
+                : message.content
 
-          {isNativeResponding && (
-            <motion.div
-              key="native-responding"
-              layoutId="native-message"
-              variants={fadeOutOnly}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="flex items-start gap-3 justify-start"
-            >
-              <div className="flex-shrink-0 mt-1">
-                <div className="h-8 w-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">N</span>
-                </div>
-              </div>
+              const isNewest = message.id === newestMessageId && !allowAnimation
+              // Check if this is the first assistant message that just replaced the loading state
+              const justReplacedLoading = isAssistant && message.id === justReplacedMessageId
 
-              <div className="flex flex-col gap-1 max-w-[70%]">
-                <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1 font-ui">
-                  Native
-                </span>
-                <div className="rounded-lg px-4 py-3 bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]">
-                  <div className="native-loader" aria-label="Native is thinking" role="status" aria-live="polite">
-                    <span />
-                    <span />
-                    <span />
+              // Get display name
+              const displayName = isAssistant
+                ? "Native"
+                : message.author?.full_name || "User"
+
+              // Try to parse JSON content from Assistant
+              let structuredData = null
+              let displayContent = content
+
+              if (isAssistant) {
+                try {
+                  // Clean up markdown code blocks if present (though system prompt says not to)
+                  // Clean up markdown code blocks if present (more robustly)
+                  const cleanJson = message.content.replace(/```json/g, "").replace(/```/g, "").trim()
+                  const parsed = JSON.parse(cleanJson)
+                  if (parsed.type && (parsed.type === 'insight' || parsed.type === 'text')) {
+                    structuredData = parsed
+                    displayContent = parsed.content
+                    if (isCollapsed && shouldShowCollapse) {
+                      displayContent = parsed.content.slice(0, 150) + "..."
+                    }
+                  }
+                } catch (e) {
+                  // Not JSON, treat as plain text
+                }
+              }
+
+              return (
+                <motion.div
+                  key={message.id}
+                  layoutId={justReplacedLoading ? "native-message" : undefined}
+                  variants={chatMessageFadeIn}
+                  initial={isNewest ? false : "initial"}
+                  animate={isNewest ? false : "animate"}
+                  exit="exit"
+                  style={isNewest ? { transform: 'none' } : undefined}
+                  className={cn(
+                    "flex items-start gap-3",
+                    isSelf ? "justify-end" : "justify-start"
+                  )}
+                  role="article"
+                  aria-label={`Message from ${displayName}${message.reply_to ? ` replying to ${message.reply_to.author?.full_name || "message"}` : ""}`}
+                >
+                  {!isSelf && (
+                    <div className="flex-shrink-0 mt-1">
+                      {isAssistant ? (
+                        <div className="h-8 w-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">N</span>
+                        </div>
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-[var(--color-avatar-bg)] flex items-center justify-center">
+                          <span className="text-[var(--color-avatar-text)] font-medium text-xs">
+                            {displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className={cn("flex flex-col gap-1 max-w-[70%]", isSelf && "items-end text-right")}>
+                    <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1">
+                      {displayName}
+                    </span>
+
+                    <div
+                      className={cn(
+                        "rounded-lg px-4 py-3 relative group",
+                        isSelf
+                          ? "bg-[var(--color-chat-user-bg)] text-[var(--color-chat-user-text)]"
+                          : "bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]"
+                      )}
+                    >
+                      {message.reply_to && (
+                        <div
+                          className={cn(
+                            "mb-2 pl-3 border-l-2 rounded-sm",
+                            isSelf
+                              ? "border-white/40 bg-white/10"
+                              : "border-[var(--color-accent)] bg-[var(--color-accent-muted)]/20"
+                          )}
+                          role="region"
+                          aria-label={`Quoted message from ${message.reply_to.author?.full_name || "User"}`}
+                        >
+                          <p className="text-[11px] font-medium text-[var(--color-fg-secondary)] mb-1">
+                            {message.reply_to.author?.full_name || "User"}
+                          </p>
+                          <p className="text-[12px] text-[var(--color-fg-secondary)] line-clamp-2">
+                            {message.reply_to.content.length > 100
+                              ? message.reply_to.content.slice(0, 100) + "..."
+                              : message.reply_to.content}
+                          </p>
+                        </div>
+                      )}
+                      <motion.div
+                        className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words mb-1"
+                        animate={{ height: "auto" }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {(!structuredData || structuredData.type !== 'insight') && displayContent}
+
+                        {structuredData?.type === 'insight' && structuredData.data && (
+                          <div className="mt-3 bg-[var(--color-bg-subtle)]/50 rounded-lg border-l-4 border-[var(--color-accent)] p-3 shadow-sm not-italic text-left">
+                            <div className="flex items-center justify-between gap-4">
+                              <span className="font-semibold text-[var(--color-fg-primary)] text-sm">{structuredData.data.title}</span>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className={cn("text-lg font-bold tracking-tight",
+                                  (structuredData.data.trend === 'up' || structuredData.data.value.startsWith('+')) ? "text-emerald-600" :
+                                    (structuredData.data.trend === 'down' || structuredData.data.value.startsWith('-')) ? "text-red-600" : "text-[var(--color-accent)]"
+                                )}>{structuredData.data.value}</span>
+                                {structuredData.data.change && (
+                                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium",
+                                    (structuredData.data.change.startsWith('+') || structuredData.data.trend === 'up') ? "bg-emerald-500/10 text-emerald-600" :
+                                      (structuredData.data.change.startsWith('-') || structuredData.data.trend === 'down') ? "bg-red-500/10 text-red-600" : "bg-gray-100 text-gray-600"
+                                  )}>
+                                    {structuredData.data.change}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {/* Simple progress bar if value is a percentage */}
+                            {structuredData.data.value && structuredData.data.value.includes('%') && (
+                              <div className="mt-2 h-1.5 w-full bg-[var(--color-bg-base)] rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-[var(--color-accent)]"
+                                  style={{ width: structuredData.data.value.replace('>', '').replace('<', '') }} // Simple cleanup
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+
+                      <p
+                        className="text-[11px] text-white/70"
+                        suppressHydrationWarning
+                      >
+                        {formatRelativeTime(message.timestamp)}
+                      </p>
+
+
+
+
+                      {shouldShowCollapse && (
+                        <button
+                          onClick={() => toggleMessageCollapse(message.id)}
+                          className="mt-2 flex items-center justify-center w-full text-[11px] text-[var(--color-fg-tertiary)] hover:text-[var(--color-fg-secondary)] transition-colors"
+                          aria-label={isCollapsed ? "Expand full answer" : "Show less"}
+                        >
+                          {isCollapsed ? "Expand full answer" : "Show less"}
+                        </button>
+                      )}
+
+                      {!isAssistant && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyingTo(message)
+                            inputRef.current?.focus()
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault()
+                              setReplyingTo(message)
+                              inputRef.current?.focus()
+                            }
+                          }}
+                          className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity h-6 w-6 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center hover:bg-[var(--color-bg-subtle)] focus:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 shadow-sm"
+                          aria-label={`Reply to ${displayName}`}
+                          tabIndex={0}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M6 2L2 6L6 10M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-[11px] text-[var(--color-fg-secondary)] mt-2">Native is thinking (~5s)</p>
+                </motion.div>
+              )
+            })}
+
+            {isNativeResponding && (
+              <motion.div
+                key="native-responding"
+                layoutId="native-message"
+                variants={fadeOutOnly}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="flex items-start gap-3 justify-start"
+              >
+                <div className="flex-shrink-0 mt-1">
+                  <div className="h-8 w-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">N</span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
+                <div className="flex flex-col gap-1 max-w-[70%]">
+                  <span className="text-xs font-medium text-[var(--color-fg-secondary)] px-1 font-ui">
+                    Native
+                  </span>
+                  <div className="rounded-lg px-4 py-3 bg-[var(--color-chat-system-bg)] text-[var(--color-chat-system-text)] border border-[var(--color-border-subtle)]">
+                    <div className="native-loader" aria-label="Native is thinking" role="status" aria-live="polite">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                    <p className="text-[11px] text-[var(--color-fg-secondary)] mt-2">Native is thinking (~5s)</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         <AnimatePresence>
           {showScrollToLatest && (
@@ -530,8 +539,8 @@ export function ChatStream({
                     Replying to {replyingTo.author?.full_name || "User"}
                   </p>
                   <p className="text-[12px] text-[var(--color-fg-secondary)] truncate">
-                    {replyingTo.content.length > 60 
-                      ? replyingTo.content.slice(0, 60) + "..." 
+                    {replyingTo.content.length > 60
+                      ? replyingTo.content.slice(0, 60) + "..."
                       : replyingTo.content}
                   </p>
                 </div>
@@ -552,12 +561,35 @@ export function ChatStream({
                   aria-label="Cancel reply"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
+          {/* Reply Suggestions (Reverse Prompts) */}
+          {!isNativeResponding && messages.length > 0 && channelType === 'team' && (
+            <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2">
+              {[
+                "Predict next Q1 metrics?",
+                "Compare with last year",
+                "Explain the decline"
+              ].map((suggestion, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => {
+                    setInputValue(`@native ${suggestion}`)
+                    inputRef.current?.focus()
+                  }}
+                  className="flex-shrink-0 whitespace-nowrap rounded-full border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-1.5 text-[11px] font-medium text-[var(--color-accent)] dark:text-white hover:bg-[var(--color-accent)]/10 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-start gap-3">
             <textarea
               ref={inputRef}

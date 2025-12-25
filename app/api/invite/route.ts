@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import { logger } from "@/lib/logger"
+import nodemailer from "nodemailer"
 
 type InviteRequest = {
   email?: string
@@ -10,31 +11,37 @@ type InviteRequest = {
 }
 
 async function sendEmailInvite(recipient: string, inviteLink: string, htmlBody?: string) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    logger.warn("RESEND_API_KEY not configured; skipping email send", { recipient })
+  const smtpUser = process.env.SMTP_USER
+  const smtpPass = process.env.SMTP_PASS
+  const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com"
+  const smtpPort = parseInt(process.env.SMTP_PORT || "465", 10)
+
+  if (!smtpUser || !smtpPass) {
+    logger.warn("SMTP credentials (SMTP_USER/SMTP_PASS) not configured; skipping email send", { recipient })
     return
   }
 
-  const payload = {
-    from: process.env.RESEND_FROM || "Native <onboarding@resend.dev>",
-    to: [recipient],
-    subject: "You’re invited to Native",
-    html: htmlBody || `<p>You’ve been invited to join Native.</p><p><a href="${inviteLink}">Accept invite</a></p>`,
-  }
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465, // true for 465, false for other ports
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    })
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  })
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"Native" <${smtpUser}>`,
+      to: recipient,
+      subject: "You’re invited to Native",
+      html: htmlBody || `<p>You’ve been invited to join Native.</p><p><a href="${inviteLink}">Accept invite</a></p>`,
+    })
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => "")
-    logger.warn("Resend email failed", { status: response.status, text })
+    logger.info("Invite email sent via SMTP", { messageId: info.messageId, recipient })
+  } catch (error) {
+    logger.error("SMTP email send failed", { error, recipient })
   }
 }
 
