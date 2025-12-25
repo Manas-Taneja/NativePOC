@@ -582,7 +582,7 @@ export function ChatStream({
                     setInputValue(`@native ${suggestion}`)
                     inputRef.current?.focus()
                   }}
-                  className="flex-shrink-0 whitespace-nowrap rounded-full border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-1.5 text-[11px] font-medium text-[var(--color-accent)] dark:text-white hover:bg-[var(--color-accent)]/10 transition-colors"
+                  className="flex-shrink-0 whitespace-nowrap rounded-full border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-1.5 text-[11px] font-medium text-black dark:text-white hover:bg-[var(--color-accent)]/10 transition-colors"
                 >
                   {suggestion}
                 </button>
