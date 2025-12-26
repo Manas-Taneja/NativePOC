@@ -88,6 +88,14 @@ export async function POST(request: Request) {
       )
     }
 
+    // Fetch organization name
+    const { data: orgData } = await supabase
+      .from("organizations")
+      .select("name")
+      .eq("id", organizationId)
+      .single()
+    const orgName = orgData?.name || "the team"
+
     // Generate base URL once
     let baseUrl = process.env.NEXT_PUBLIC_APP_URL
     if (!baseUrl) {
@@ -166,17 +174,46 @@ END $$;`
       results.push({ email: inviteEmail, inviteLink })
 
       // Fire-and-forget email send
+      const logoUrl = `${baseUrl}/NativeLogo.png`
+
+      // Branded HTML Email Template
       const prettyHtml = `
-      <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <h1 style="color: #000; font-size: 24px; font-weight: 600;">Use Native</h1>
-        </div>
-        <div style="background: #f9f9f9; padding: 32px; border-radius: 12px; text-align: center;">
-          <p style="font-size: 16px; margin-bottom: 24px;">You have been invited to join <strong>Native</strong>.</p>
-          <a href="${inviteLink}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; font-size: 16px;">Accept Invite</a>
-          <p style="margin-top: 24px; font-size: 14px; color: #666;">or copy this link: <br/><a href="${inviteLink}" style="color: #666;">${inviteLink}</a></p>
-        </div>
-      </div>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f3f5; margin: 0; padding: 40px 20px;">
+          <div style="background-color: #ffffff; max-width: 480px; margin: 0 auto; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden;">
+            
+            <div style="background-color: #f8f9fa; padding: 32px 0 24px; text-align: center; border-bottom: 1px solid #f1f3f5;">
+               <img src="${logoUrl}" alt="Native" width="48" height="48" style="display: inline-block; border-radius: 8px;">
+            </div>
+
+            <div style="padding: 40px 32px; text-align: center;">
+              <h1 style="color: #1a1a1a; font-size: 24px; font-weight: 600; margin: 0 0 16px; letter-spacing: -0.5px;">You've been invited</h1>
+              <p style="color: #525252; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                You have been invited to join <strong>${orgName}</strong> on <strong>Native</strong>. 
+                Collaborate, chat, and track metrics in one place.
+              </p>
+              
+              <a href="${inviteLink}" style="display: inline-block; background-color: #1a6391; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; transition: opacity 0.2s;">
+                Accept Invite
+              </a>
+
+              <p style="margin-top: 32px; font-size: 13px; color: #a1a1a1;">
+                Or copy this link: <br/>
+                <a href="${inviteLink}" style="color: #1a6391; text-decoration: none; word-break: break-all;">${inviteLink}</a>
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 24px;">
+            <p style="color: #a1a1a1; font-size: 12px; margin: 0;">Sent via Native</p>
+          </div>
+        </body>
+      </html>
       `
 
       void sendEmailInvite(inviteEmail, inviteLink, prettyHtml)
