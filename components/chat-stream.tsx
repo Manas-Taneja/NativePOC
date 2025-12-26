@@ -38,8 +38,13 @@ export function ChatStream({
 }: ChatStreamProps) {
   const { userId: currentUserId } = useUser()
   const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [collapsedMessages, setCollapsedMessages] = React.useState<Set<string>>(new Set())
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
   const [inputValue, setInputValue] = React.useState("")
   const previousMessagesLength = React.useRef(messages.length)
   const [newestMessageId, setNewestMessageId] = React.useState<string | null>(null)
@@ -584,8 +589,8 @@ export function ChatStream({
                     setInputValue(`@native ${suggestion}`)
                     inputRef.current?.focus()
                   }}
-                  className="flex-shrink-0 whitespace-nowrap rounded-full border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-1.5 text-[11px] font-medium hover:bg-[var(--color-accent)]/10 transition-colors"
-                  style={{ color: resolvedTheme === 'dark' ? '#ffffff' : '#000000' }}
+                  className="flex-shrink-0 whitespace-nowrap rounded-full border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-1.5 text-[11px] font-medium text-black dark:text-white hover:bg-[var(--color-accent)]/10 transition-colors"
+                  style={mounted ? { color: resolvedTheme === 'dark' ? '#ffffff' : '#000000' } : undefined}
                 >
                   {suggestion}
                 </button>
