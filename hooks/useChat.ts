@@ -202,37 +202,69 @@ export function useChat(options: UseChatOptions = {}) {
     setError(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      if (options?.isAI) {
+        // AI messages still go direct to DB (or could go via API too, but let's keep it simple for now as AI doesn't trigger push yet via this path usually)
+        // Actually, let's keep AI direct for now to avoid auth complexity with API unless needed. 
+        // WAIT: The API requires user auth. AI response generation usually runs client side here (mock) or server side. 
+        // The `generateNativeResponse` is client side. 
+        // If `isAI` is true, we are spoofing an AI message from the client? 
+        // Yes, `handleSendMessage` -> `requestAIResponse` -> `sendMessage(..., {isAI: true})`.
+        // The API expects `auth.getUser()`. The AI "user" is not logged in.
+        // So for AI messages, we MUST continue using direct supabase insert (RLS allows it? Or is it bypassed?).
+        // Looking at RLS: "Authenticated users can insert". AI isn't auth'd as a user. 
+        // The current code works because `author_id: null` is likely allowed or bypassed? 
+        // Actually, looking at `insert` in original code: `author_id: options?.isAI ? null : user?.id`.
 
-      const metadata: Record<string, unknown> = {}
-      if (options?.replyToId) {
-        metadata.reply_to_id = options.replyToId
+        // Strategy: 
+        // If isAI -> Use DB direct (Push disabled for AI for now, or handled differently)
+        // If User -> Use API (Enables Push)
+
+        const metadata: Record<string, unknown> = {}
+        if (options?.replyToId) metadata.reply_to_id = options.replyToId
+
+        const { data, error: sendError } = await supabase
+          .from("messages")
+          .insert({
+            channel_id: currentChannel.id,
+            author_id: null,
+            content: content.trim(),
+            is_ai_response: true,
+            metadata,
+          })
+          .select(`
+            *,
+            author:profiles!author_id (
+              id,
+              full_name,
+              avatar_url
+            )
+          `)
+          .single()
+
+        if (sendError) throw sendError
+        return data
       }
 
-      const { data, error: sendError } = await supabase
-        .from("messages")
-        .insert({
-          channel_id: currentChannel.id,
-          author_id: options?.isAI ? null : user?.id,
+      // USER MESSAGES -> Go through API for Push Triggers
+      const response = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelId: currentChannel.id,
           content: content.trim(),
-          is_ai_response: options?.isAI || false,
-          metadata,
+          replyToId: options?.replyToId
         })
-        .select(`
-          *,
-          author:profiles!author_id (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
-        .single()
+      })
 
-      if (sendError) throw sendError
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error?.message || "Failed to send message")
+      }
 
-      logger.debug("Message sent successfully:", data)
-      // Message will be added via realtime subscription
+      const data = await response.json()
+      logger.debug("Message sent successfully via API:", data)
       return data
+
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to send message"
       setError(message)
@@ -309,10 +341,10 @@ export function useChat(options: UseChatOptions = {}) {
                 content: replyData.content as string,
                 author: replyAuthor
                   ? {
-                      id: replyAuthor.id as string,
-                      full_name: (replyAuthor.full_name ?? null) as string | null,
-                      avatar_url: (replyAuthor.avatar_url ?? null) as string | null,
-                    }
+                    id: replyAuthor.id as string,
+                    full_name: (replyAuthor.full_name ?? null) as string | null,
+                    avatar_url: (replyAuthor.avatar_url ?? null) as string | null,
+                  }
                   : undefined,
               }
             }
