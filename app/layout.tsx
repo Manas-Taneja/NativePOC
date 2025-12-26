@@ -22,6 +22,7 @@ const barlowSemiCondensed = Barlow_Semi_Condensed({
 export const metadata: Metadata = {
   title: "Native Dashboard",
   description: "iOS-inspired refined minimalism dashboard",
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({
