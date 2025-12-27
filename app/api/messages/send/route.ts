@@ -85,43 +85,43 @@ export async function POST(request: Request) {
             )
         }
 
-        // 5. Trigger Push Notification (Async - don't block response)
-        // We don't await this to keep the UI snappy
-        (async () => {
-            try {
-                const title = channel.type === 'direct'
-                    ? `New message from ${message.author?.full_name || 'Someone'}`
-                    : `#${channel.name}`
+        // 5. Trigger Push Notification
+        // We MUST await this in serverless environments, otherwise the runtime may
+        // kill the process before the push is sent.
+        try {
+            const title = channel.type === 'direct'
+                ? `New message from ${message.author?.full_name || 'Someone'}`
+                : `#${channel.name}`
 
-                const pushPayload = {
-                    title,
-                    body: content.length > 100 ? content.substring(0, 100) + "..." : content,
-                    url: "/", // Should probably link to deep channel URL eventually
-                    tag: `channel-${channelId}`,
-                    data: {
-                        channelId,
-                        messageId: message.id
-                    }
+            const pushPayload = {
+                title,
+                body: content.length > 100 ? content.substring(0, 100) + "..." : content,
+                url: "/", // Should probably link to deep channel URL eventually
+                tag: `channel-${channelId}`,
+                data: {
+                    channelId,
+                    messageId: message.id
                 }
-
-                if (channel.type === "direct") {
-                    // For DM: Send only to other participants
-                    const participants = channel.metadata?.participants || []
-                    const otherUsers = participants.filter((uid: string) => uid !== user.id)
-
-                    for (const recipientId of otherUsers) {
-                        await sendPushToUser(supabase, recipientId, pushPayload)
-                    }
-                } else {
-                    // For Team: Send to org members (excluding sender)
-                    // ideally we'd filter by channel membership if that existed
-                    // Assuming org-wide channels for now
-                    await sendPushToOrganization(supabase, channel.organization_id, pushPayload, user.id)
-                }
-            } catch (err) {
-                logger.error("Background push notification failed:", err)
             }
-        })()
+
+            if (channel.type === "direct") {
+                // For DM: Send only to other participants
+                const participants = channel.metadata?.participants || []
+                const otherUsers = participants.filter((uid: string) => uid !== user.id)
+
+                for (const recipientId of otherUsers) {
+                    await sendPushToUser(supabase, recipientId, pushPayload)
+                }
+            } else {
+                // For Team: Send to org members (excluding sender)
+                // ideally we'd filter by channel membership if that existed
+                // Assuming org-wide channels for now
+                await sendPushToOrganization(supabase, channel.organization_id, pushPayload, user.id)
+            }
+        } catch (err) {
+            logger.error("Push notification logic failed:", err)
+            // Don't fail the request if push fails, just log it
+        }
 
         return NextResponse.json(message)
 

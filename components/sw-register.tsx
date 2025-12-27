@@ -25,6 +25,8 @@ export function ServiceWorkerRegister() {
       try {
         registration = await navigator.serviceWorker.register("/sw.js")
         logger.info("Service worker registered", { scope: registration.scope })
+        // Force update check
+        void registration.update()
       } catch (error) {
         logger.error("Service worker registration failed", error)
         return

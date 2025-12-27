@@ -437,14 +437,14 @@ export default function Home() {
         </div>
       )}
       <div className="relative z-10">
-        <DashboardHeader 
-          insights={insights} 
+        <DashboardHeader
+          insights={insights}
           metrics={slaMetrics}
           onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
         />
         <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 space-y-4">
           {chatError && (
-            <ErrorMessage 
+            <ErrorMessage
               error={chatError}
             />
           )}
@@ -538,7 +538,18 @@ export default function Home() {
                     <div className="h-full flex items-center justify-center text-[var(--color-fg-tertiary)]">
                       <div className="text-center">
                         <p className="text-lg mb-2">No channel selected</p>
-                        <p className="text-sm">Select a channel from the sidebar to start chatting</p>
+                        <p className="text-sm mb-4">Select a channel from the sidebar to start chatting</p>
+                        {channels.find((c) => c.type === "team") && (
+                          <button
+                            onClick={() => {
+                              const team = channels.find((c) => c.type === "team")
+                              if (team) void selectChannel(team)
+                            }}
+                            className="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                          >
+                            Open Team Chat
+                          </button>
+                        )}
                       </div>
                     </div>
                   ) : (
