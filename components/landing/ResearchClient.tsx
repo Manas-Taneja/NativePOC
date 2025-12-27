@@ -531,9 +531,9 @@ const ResearchClient = () => {
                         </div>
 
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <Link href="/" className="hover:text-foreground transition-colors">Product</Link>
-                            <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
-                            <Link href="/research" className="hover:text-foreground transition-colors">Research</Link>
+                            <Link href={"/" as any} className="hover:text-foreground transition-colors">Product</Link>
+                            <Link href={"/pricing" as any} className="hover:text-foreground transition-colors">Pricing</Link>
+                            <Link href={"/research" as any} className="hover:text-foreground transition-colors">Research</Link>
                             <a href="#" className="hover:text-foreground transition-colors">Blog</a>
                         </div>
 

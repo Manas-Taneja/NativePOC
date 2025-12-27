@@ -1,4 +1,4 @@
-import ResearchClient from "./research-client";
+import ResearchClient from "@/components/landing/ResearchClient";
 
 export const metadata = {
     title: "Research | Native",

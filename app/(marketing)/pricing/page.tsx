@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check, Lock, DollarSign, Zap, Users, FileX } from "lucide-react";
 import NavigationSection from "@/components/landing/NavigationSection";
 import FooterSection from "@/components/landing/FooterSection";
-import PricingClient from "./pricing-client";
+import PricingClient from "@/components/landing/PricingClient";
 
 export const metadata = {
     title: "Pricing | Native",

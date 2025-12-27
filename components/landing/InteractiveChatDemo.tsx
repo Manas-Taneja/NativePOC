@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { Play, RotateCcw, Check, Zap, Brain, MessageSquare, ListTodo, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -211,8 +213,8 @@ const InteractiveChatDemo = () => {
               key={scenario}
               onClick={() => handleScenarioChange(scenario)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeScenario === scenario
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                  : "glass text-muted-foreground hover:text-foreground hover:bg-card/80"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                : "glass text-muted-foreground hover:text-foreground hover:bg-card/80"
                 }`}
             >
               {scenario === "sales" && "Sales Follow-up"}
@@ -281,8 +283,8 @@ const InteractiveChatDemo = () => {
                 >
                   {/* Avatar */}
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold ${msg.isNative
-                      ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/20"
-                      : "bg-muted text-foreground"
+                    ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/20"
+                    : "bg-muted text-foreground"
                     }`}>
                     {msg.avatar}
                   </div>
@@ -302,8 +304,8 @@ const InteractiveChatDemo = () => {
                       )}
                     </div>
                     <div className={`inline-block p-3 rounded-2xl text-sm leading-relaxed ${msg.isNative
-                        ? "bg-primary/10 border border-primary/20 text-foreground shadow-lg shadow-primary/5"
-                        : "bg-muted/50 text-foreground"
+                      ? "bg-primary/10 border border-primary/20 text-foreground shadow-lg shadow-primary/5"
+                      : "bg-muted/50 text-foreground"
                       } ${msg.isNudge ? "glow-soft" : ""}`}>
                       {msg.content}
                     </div>

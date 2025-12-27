@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -43,7 +45,7 @@ const NavigationSection = () => {
               link.href.startsWith('/') && !link.href.includes('#') ? (
                 <Link
                   key={link.label}
-                  href={link.href}
+                  href={link.href as any}
                   className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                 >
                   {link.label}
@@ -101,7 +103,7 @@ const NavigationSection = () => {
                 link.href.startsWith('/') && !link.href.includes('#') ? (
                   <Link
                     key={link.label}
-                    href={link.href}
+                    href={link.href as any}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2"
                   >
