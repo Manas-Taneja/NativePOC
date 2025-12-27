@@ -427,6 +427,16 @@ export function useChat(options: UseChatOptions = {}) {
     }
   }, [options.organizationId, fetchChannels, fetchMembers])
 
+  // Auto-select Team Channel on initial load if no channel selected
+  useEffect(() => {
+    if (channels.length > 0 && !currentChannel) {
+      const teamChan = channels.find(c => c.type === "team")
+      if (teamChan) {
+        selectChannel(teamChan).catch(e => logger.error("Failed to auto-select team channel", e))
+      }
+    }
+  }, [channels, currentChannel, selectChannel])
+
   return {
     channels,
     currentChannel,
