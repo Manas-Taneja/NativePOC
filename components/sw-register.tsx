@@ -36,18 +36,25 @@ export function ServiceWorkerRegister() {
 
       try {
         const existing = await registration.pushManager.getSubscription()
-        if (existing) return
+        let subscription = existing
 
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidKey),
-        })
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey),
+          })
+        }
 
-        await fetch("/api/push/subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ subscription }),
-        })
+        // Always sync with server to ensure DB is up to date
+        if (subscription) {
+          await fetch("/api/push/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subscription }),
+          })
+        }
+
+
       } catch (error) {
         // Don't fail registration on push errors; just log a warning
         logger.warn("Push subscription failed; continuing without push", error)

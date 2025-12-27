@@ -1,4 +1,4 @@
-const CACHE_NAME = "native-shell-v2"
+const CACHE_NAME = "native-shell-v3"
 const SHELL_ASSETS = ["/", "/manifest.webmanifest"]
 
 self.addEventListener("install", (event) => {
