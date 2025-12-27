@@ -14,7 +14,7 @@ const turbopackAlias = {
 } as const
 
 const nextConfig: NextConfig = {
-  typedRoutes: true,
+  typedRoutes: false,
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),

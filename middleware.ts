@@ -14,22 +14,40 @@ export async function middleware(request: NextRequest) {
     const { user, response } = await updateSession(request)
     const pathname = request.nextUrl.pathname
 
-    // Allow access to auth pages when not authenticated
     const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup")
+    const isDashboard = pathname.startsWith("/dashboard")
+    const isRoot = pathname === "/"
 
     // Special case: allow signup with invite code even if logged in
     const hasInviteCode = request.nextUrl.searchParams.has("invite")
 
     if (isAuthPage) {
         if (user && !hasInviteCode) {
-            // Logged in user trying to access auth pages (without invite) - redirect to home
-            return NextResponse.redirect(new URL("/", request.url))
+            // Logged in user trying to access auth pages (without invite) - redirect to dashboard
+            return NextResponse.redirect(new URL("/dashboard", request.url))
         }
         // Not logged in, or has invite code - allow access
         return response
     }
 
+    if (isDashboard) {
+        if (!user) {
+            // Not logged in trying to access dashboard - redirect to login
+            return NextResponse.redirect(new URL("/login", request.url))
+        }
+    }
+
+    if (isRoot) {
+        if (user) {
+            // Logged in user visiting landing page - redirect to dashboard
+            return NextResponse.redirect(new URL("/dashboard", request.url))
+        }
+        // Guest visiting landing page - allow
+    }
+
     return response
+
+
 }
 
 export const config = {
